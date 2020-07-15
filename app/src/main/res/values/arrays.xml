@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="certs">
+        <item>MIIEqDCCA5CgAwIBAgIJA071MA0GCSqGSIb3DQEBBAUAMIGUMQsww...</item>
+    </string-array>
+
+
+    <integer-array name="emoji_transfer_code">
+        <item>0x1f618</item>
+        <item>0x1f643</item>
+        <item>0x1f495</item>
+    </integer-array>
+
+    <array name="emoji_transfer_drawable">
+        <item>@drawable/ic_launcher_background</item>
+        <item>@drawable/ic_launcher_background</item>
+        <item>@drawable/ic_launcher_background</item>
+    </array>
+
+    <string-array name="myemoji_transfer_code">
+        <item>吃瓜</item>
+        <item>哈哈</item>
+        <item>hi</item>
+    </string-array>
+
+    <array name="myemoji_transfer_drawable">
+        <item>@drawable/ic_launcher_background</item>
+        <item>@drawable/ic_launcher_background</item>
+        <item>@drawable/ic_launcher_background</item>
+    </array>
+
+</resources>

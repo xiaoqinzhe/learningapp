@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:overScrollMode="ifContentScrolls"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="false"
+        android:layout_centerHorizontal="false"
+        android:id="@+id/sv_main"
+        android:animateLayoutChanges="true"
+        android:orientation="vertical"
+        >
+
+
+
+        <Button
+            android:id="@+id/btn_main_intent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:onClick="startIntent"
+            android:background="@drawable/corner_rect"
+            android:text="@string/btn_main_intent_text" />
+
+        <Button
+            android:id="@+id/btn_main_worker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:onClick="startWorker"
+            android:background="@drawable/selector_button"
+            android:text="@string/btn_main_worker_text" />
+
+        <Button
+            android:id="@+id/btn_main_nav"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:onClick="startNav"
+            android:background="@drawable/box_gradient"
+            android:text="@string/btn_main_navigation" />
+
+        <Button
+            android:id="@+id/btn_main_livedata"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:onClick="startLivedata"
+            android:background="@drawable/btn_background"
+            android:text="@string/btn_main_livedata" />
+
+        <Button
+            android:id="@+id/btn_main_asynctask"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:onClick="startAsynctask"
+            android:text="@string/btn_main_asynctask" />
+
+        <Button
+            android:id="@+id/btn_main_notify"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:onClick="startNotification"
+            android:text="Notification" />
+
+        <Button
+            android:id="@+id/btn_main_fragment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:onClick="startFragment"
+            android:text="Fragment" />
+
+        <Button
+            android:id="@+id/btn_main_media"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:onClick="startMedia"
+            android:text="Media" />
+
+    </LinearLayout>
+
+</ScrollView>
+

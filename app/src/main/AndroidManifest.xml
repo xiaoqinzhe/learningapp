@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.learningapp">
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <application
+        android:name=".AppApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:theme="@style/AppTheme">
+        <activity android:name=".intent.KotlinTestActivity"></activity>
+        <activity
+            android:name=".views.KeyboardActivity"
+            android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".views.EmojiActivity" />
+        <activity android:name=".views.TouchEventActivity" />
+        <activity android:name=".media.VideoViewActivity" />
+        <activity android:name=".media.AudioActivity" />
+        <activity android:name=".media.MediaNavActivity" />
+        <activity android:name=".views.ZoomImageViewActivity" />
+        <activity
+            android:name=".views.PicInPicActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:launchMode="singleTask"
+            android:supportsPictureInPicture="true"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity android:name=".views.DummyDetailActivity" />
+        <activity android:name=".fragments.DummyActivity" />
+        <activity
+            android:name=".views.ViewNavActivity"
+            android:parentActivityName=".MainActivity" />
+        <activity android:name=".views.MenuActivity" />
+        <activity android:name=".notification.NotificationActivity" />
+        <activity android:name=".backworker.AsyncActivity" />
+        <activity android:name=".views.RecyclerViewActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="learningapp" />
+                <data android:host="learningapp.com" />
+                <data android:path="/article" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".intent.StartActivity" />
+        <activity
+            android:name=".backworker.WorkerActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity android:name=".livedata.UserProfileActivity" />
+        <activity
+            android:name=".intent.DisplayMessageActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity">
+
+            <!-- The meta-data tag is required if you support API level 15 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="learningapp.com"
+                    android:scheme="app" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
+        </activity>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileauthor"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_path" />
+        </provider>
+    </application>
+
+</manifest>

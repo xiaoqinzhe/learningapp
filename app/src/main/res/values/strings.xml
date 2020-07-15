@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">LearningApp</string>
+    <string name="edit_message">Enter a message</string>
+    <string name="button_send">Send</string>
+    <string name="shortcutShortLabel">shortcutShort</string>
+    <string name="shortcutLongLabel">shortcutLong</string>
+    <string name="shortcutDisabledMessage">shortcutDisabledMessage</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="btn_worker_start_text">start myworker</string>
+    <string name="tv_worker_state">worker state</string>
+    <string name="btn_main_worker_text">WorkerManage</string>
+    <string name="btn_main_intent_text">Intent</string>
+    <string name="tv_worker_progress">progress</string>
+    <string name="tv_livedata_userprofile_id_text">userId</string>
+    <string name="tv_livedata_userprofile_username_text">username</string>
+    <string name="tv_livedata_userprofile_sign_text">sign</string>
+    <string name="btn_main_livedata">livedata</string>
+    <string name="btn_main_navigation">Views</string>
+    <string name="btn_livedata_userprofile_update">update</string>
+    <string name="btn_main_asynctask">asynctask</string>
+    <string name="btn_intent_start_canmera">Image Capture</string>
+    <string name="btn_intent_start_camera">Image Capture</string>s
+</resources>
