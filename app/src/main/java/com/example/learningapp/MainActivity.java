@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Looper;
 import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.DragEvent;
@@ -23,11 +24,15 @@ import com.example.learningapp.backworker.AsyncActivity;
 import com.example.learningapp.backworker.WorkerActivity;
 import com.example.learningapp.fragments.DummyActivity;
 import com.example.learningapp.intent.StartActivity;
+import com.example.learningapp.kotlin.HelloKotlin;
 import com.example.learningapp.livedata.UserProfileActivity;
 import com.example.learningapp.media.MediaNavActivity;
 import com.example.learningapp.views.RecyclerViewActivity;
 import com.example.learningapp.notification.NotificationActivity;
 import com.example.learningapp.views.ViewNavActivity;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     public static final String EXTRA_MESSAGE = "com.example.myfirstapp.MESSAGE";
@@ -36,6 +41,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        HelloKotlin.Companion.getSB();
+
+        List<String> list = new ArrayList<>();
 
         Log.d("getDir()", getDir("getDir", MODE_PRIVATE).getAbsolutePath());
         Log.d("getDataDir()", getDataDir().getAbsolutePath());

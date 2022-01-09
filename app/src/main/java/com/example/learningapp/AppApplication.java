@@ -11,10 +11,12 @@ import com.example.learningapp.views.emoji.EmojiTransferManager;
 public class AppApplication extends Application {
 
     public static AppDatabase appDatabase;
+    private static AppApplication mApp;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        mApp = this;
         appDatabase = AppDatabase.getInstance(getApplicationContext());
 
         // Emoji Compat  download  （版本问题怎么办？）
@@ -45,4 +47,7 @@ public class AppApplication extends Application {
         return appDatabase;
     }
 
+    public static AppApplication getApp() {
+        return mApp;
+    }
 }
