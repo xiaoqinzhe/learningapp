@@ -8,7 +8,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.5.2'
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.30'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.21'
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
@@ -24,4 +24,18 @@ allprojects {
 
 task clean(type: Delete) {
     delete rootProject.buildDir
+}
+
+task mytask {
+//    dependsOn("assembleDebug")
+    println "mytask configuration" // 配置阶段
+    afterEvaluate { // task依赖图完成
+        println "mytask afterEvaluate graph completed"
+    }
+    doFirst { // 执行阶段
+        println "mytask doFirst"
+    }
+    doLast {
+        println "mytask doLast"
+    }
 }
