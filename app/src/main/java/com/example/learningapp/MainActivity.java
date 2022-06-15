@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 
+import com.example.learningapp.aidl.AidlActivity;
 import com.example.learningapp.backworker.AsyncActivity;
 import com.example.learningapp.backworker.WorkerActivity;
 import com.example.learningapp.fragments.DummyActivity;
@@ -33,6 +34,7 @@ import com.example.learningapp.views.ViewNavActivity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainActivity extends AppCompatActivity {
     public static final String EXTRA_MESSAGE = "com.example.myfirstapp.MESSAGE";
@@ -249,5 +251,12 @@ public class MainActivity extends AppCompatActivity {
     public void startMedia(View view) {
         Intent intent = new Intent(this, MediaNavActivity.class);
         startActivity(intent);
+    }
+
+    public synchronized void startAIDL(View view) {
+        Intent intent = new Intent(this, AidlActivity.class);
+        startActivity(intent);
+        AtomicInteger a = new AtomicInteger(0);
+        a.getAndAdd(1);
     }
 }

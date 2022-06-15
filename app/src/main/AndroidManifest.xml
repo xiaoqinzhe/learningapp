@@ -6,18 +6,21 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name=".AppApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:networkSecurityConfig="@xml/network_security_config"
         android:theme="@style/AppTheme">
-        <activity android:name=".intent.KotlinTestActivity"></activity>
+        <activity
+            android:name=".aidl.AidlActivity"
+            android:exported="false" />
+        <activity android:name=".intent.KotlinTestActivity" />
         <activity
             android:name=".views.KeyboardActivity"
             android:windowSoftInputMode="adjustResize" />
@@ -89,6 +92,10 @@
                 android:name="android.app.shortcuts"
                 android:resource="@xml/shortcuts" />
         </activity>
+
+        <service
+            android:name=".aidl.ComputeService"
+            android:process=":subprocess1" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
