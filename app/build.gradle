@@ -86,3 +86,15 @@ dependencies {
     implementation 'androidx.emoji:emoji-bundled:1.0.0'
     implementation 'androidx.emoji:emoji-appcompat:1.0.0'
 }
+
+// kotlin
+dependencies {
+    // Kotlin
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.4.32"
+    // 协程核心库
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3"
+    // 协程Android支持库
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.3"
+    // 协程Java8支持库
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.4.3"
+}
