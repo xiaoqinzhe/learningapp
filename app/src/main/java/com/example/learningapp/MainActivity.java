@@ -25,7 +25,9 @@ import com.example.learningapp.backworker.AsyncActivity;
 import com.example.learningapp.backworker.WorkerActivity;
 import com.example.learningapp.fragments.DummyActivity;
 import com.example.learningapp.intent.StartActivity;
+import com.example.learningapp.jetpack.databinding.DataBindingActivity;
 import com.example.learningapp.kotlin.HelloKotlin;
+import com.example.learningapp.kotlin.coroutine.CoroutineTest;
 import com.example.learningapp.livedata.UserProfileActivity;
 import com.example.learningapp.media.MediaNavActivity;
 import com.example.learningapp.views.RecyclerViewActivity;
@@ -45,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         HelloKotlin.Companion.getSB();
+        new CoroutineTest().main();
 
         List<String> list = new ArrayList<>();
 
@@ -258,5 +261,10 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
         AtomicInteger a = new AtomicInteger(0);
         a.getAndAdd(1);
+    }
+
+    public synchronized void startDataBinding(View view) {
+        Intent intent = new Intent(this, DataBindingActivity.class);
+        startActivity(intent);
     }
 }

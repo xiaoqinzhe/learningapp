@@ -17,7 +17,7 @@ public class AppApplication extends Application {
     public void onCreate() {
         super.onCreate();
         mApp = this;
-        appDatabase = AppDatabase.getInstance(getApplicationContext());
+//        appDatabase = AppDatabase.getInstance(getApplicationContext());
 
         // Emoji Compat  download  （版本问题怎么办？）
 //        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {

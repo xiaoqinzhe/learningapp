@@ -105,6 +105,15 @@
             android:onClick="startAIDL"
             android:text="aidl" />
 
+        <Button
+            android:id="@+id/btn_main_databinding"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:onClick="startDataBinding"
+            android:text="databinding" />
+
     </LinearLayout>
 
 </ScrollView>
