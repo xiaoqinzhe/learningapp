@@ -30,6 +30,7 @@ import com.example.learningapp.kotlin.HelloKotlin;
 import com.example.learningapp.kotlin.coroutine.CoroutineTest;
 import com.example.learningapp.livedata.UserProfileActivity;
 import com.example.learningapp.media.MediaNavActivity;
+import com.example.learningapp.ndk.NDKActivity;
 import com.example.learningapp.views.RecyclerViewActivity;
 import com.example.learningapp.notification.NotificationActivity;
 import com.example.learningapp.views.ViewNavActivity;
@@ -265,6 +266,11 @@ public class MainActivity extends AppCompatActivity {
 
     public synchronized void startDataBinding(View view) {
         Intent intent = new Intent(this, DataBindingActivity.class);
+        startActivity(intent);
+    }
+
+    public synchronized void startNDK(View view) {
+        Intent intent = new Intent(this, NDKActivity.class);
         startActivity(intent);
     }
 }

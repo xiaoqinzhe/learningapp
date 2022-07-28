@@ -1,5 +1,7 @@
 import com.example.buildsrc.TransformRegPlugin
 
+apply from: project.file("build-deps.gradle")
+
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
@@ -9,15 +11,15 @@ apply plugin: TestPlugin
 apply plugin: TransformRegPlugin
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion VERSION_COMPILE_SDK
     buildToolsVersion "29.0.3"
     dataBinding {
         enabled = true
     }
     defaultConfig {
         applicationId "com.example.learningapp"
-        minSdkVersion 26
-        targetSdkVersion 29
+        minSdkVersion VERSION_MIN_SDK
+        targetSdkVersion VERSION_TARGET_SDK
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -31,13 +33,20 @@ android {
     buildTypes {
         release {
             minifyEnabled false
+
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation ndktool
+
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
@@ -77,7 +86,7 @@ dependencies {
     implementation "android.arch.persistence.room:runtime:$room_version"
     // room 配合 RxJava
     implementation "android.arch.persistence.room:rxjava2:$room_version"
-    annotationProcessor "android.arch.persistence.room:compiler:$room_version"
+    kapt "android.arch.persistence.room:compiler:$room_version"
 }
 
 dependencies {

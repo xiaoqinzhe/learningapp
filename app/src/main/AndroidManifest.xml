@@ -18,6 +18,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
+            android:name=".ndk.NDKActivity"
+            android:exported="false" />
+        <activity
             android:name=".jetpack.databinding.DataBindingActivity"
             android:exported="false" />
         <activity
