@@ -5,24 +5,33 @@ import android.util.Log
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import com.example.learningapp.R
 import com.example.ndktool.NDKTool
 import java.io.File
 import java.util.*
 
 class NDKActivity : AppCompatActivity() {
+
+    lateinit var viewModel: NDKViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_ndkactivity)
+        viewModel = ViewModelProvider(this).get(NDKViewModel::class.java)
+        viewModel.jniStr.observe(this, {
+            findViewById<TextView>(R.id.tv_str_jni).setText(it)
+        })
         findViewById<View>(R.id.btn_get_str_jni)?.setOnClickListener {
-            findViewById<TextView>(R.id.tv_str_jni)?.text = NDKTool.getStringFromJni()
+            viewModel.getStringFromJni()
         }
-        var path = filesDir.parentFile.absolutePath+"/"
-        path = "/sdcard/DCIM/"
-        Thread {
-            val size = NDKTool.getDirSizeByNative(path)
-            Log.d("NDKActivity", "size = " + size)
-        }.start()
+        findViewById<View>(R.id.btn_get_dir_size).setOnClickListener {
+            var path = filesDir.parentFile.absolutePath+"/"
+            path = "/sdcard/DCIM/"
+            Thread {
+                val size = NDKTool.getDirSizeByNative(path)
+                Log.d("NDKActivity", "size = " + size)
+            }.start()
 //        Thread {
 //            val st = System.currentTimeMillis()
 //            val size = dirSize(path)
@@ -31,6 +40,7 @@ class NDKActivity : AppCompatActivity() {
 ////                .sum()
 //            Log.d("native", "fileCount = " + size + ", duration=" + (System.currentTimeMillis() - st))
 //        }.start()
+        }
     }
 
     fun getDirSizeByJava(path: String): Long {

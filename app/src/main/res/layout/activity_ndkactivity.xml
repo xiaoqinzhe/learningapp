@@ -11,7 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="32dp"
         android:text="TextView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -25,4 +25,23 @@
         android:text="get string from jni"
         app:layout_constraintStart_toEndOf="@+id/tv_str_jni"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/btn_get_dir_size"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="getDirSiszeJni"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/barrier_jni_str" />
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/barrier_jni_str"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="tv_str_jni,btn_get_str_jni"
+        tools:layout_editor_absoluteX="166dp"
+        tools:layout_editor_absoluteY="61dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>

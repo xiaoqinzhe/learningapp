@@ -18,7 +18,7 @@ class DataBindingActivity : AppCompatActivity() {
         val data = DataBindInfo()
         data.name.value = "name"
         data.content.value = "content"
-        binding.databindData =data
+        binding.databindData = data
 
         binding.vm = ViewModelProvider(this).get(DViewModel::class.java)
     }
