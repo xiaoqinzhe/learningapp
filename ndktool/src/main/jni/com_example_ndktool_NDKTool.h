@@ -5,7 +5,7 @@
 #ifndef _Included_com_example_ndktool_NDKTool
 #define _Included_com_example_ndktool_NDKTool
 #ifdef __cplusplus
-extern "C" {
+extern "C" {  // 用c来编，防止函数重载问题
 #endif
 /*
  * Class:     com_example_ndktool_NDKTool
@@ -14,6 +14,9 @@ extern "C" {
  */
 JNIEXPORT jstring JNICALL Java_com_example_ndktool_NDKTool_getStringFromJni
   (JNIEnv *, jclass);
+
+JNIEXPORT jint JNICALL
+Java_com_example_ndktool_NDKTool_getDirSizeByNative(JNIEnv *env, jclass clazz, jstring path);
 
 #ifdef __cplusplus
 }

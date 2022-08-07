@@ -10,13 +10,18 @@ void test(JNIEnv *env) {
 
 }
 
-int getDirSize() {
-    int size = getDirSize("cc");
-}
-
 extern "C" JNIEXPORT jstring JNICALL Java_com_example_ndktool_NDKTool_getStringFromJni(JNIEnv *env, jclass cls)
 {
     LOGD("Java_com_example_ndktool_NDKTool_getStringFromJni");
     test(env);
     return env->NewStringUTF("hello from c++");
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_example_ndktool_NDKTool_getDirSizeByNative(JNIEnv *env, jclass clazz, jstring path) {
+    const char* pathchar = env->GetStringUTFChars(path, 0);
+    std::string stringPath(pathchar);
+    env->ReleaseStringUTFChars(path, pathchar);
+    return getDirSize(stringPath);
 }

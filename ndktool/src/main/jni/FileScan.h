@@ -7,6 +7,6 @@
 
 #include<string>
 
-int getDirSize(std::string path);
+int getDirSize(const std::string& path);
 
 #endif //LEARNINGAPP_FILESCAN_H

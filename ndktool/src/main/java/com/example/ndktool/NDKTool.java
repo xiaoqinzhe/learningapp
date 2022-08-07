@@ -8,4 +8,6 @@ public class NDKTool {
 
     public static native String getStringFromJni();
 
+    public static native int getDirSizeByNative(String path);
+
 }
