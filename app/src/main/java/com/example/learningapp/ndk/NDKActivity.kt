@@ -17,12 +17,12 @@ class NDKActivity : AppCompatActivity() {
         findViewById<View>(R.id.btn_get_str_jni)?.setOnClickListener {
             findViewById<TextView>(R.id.tv_str_jni)?.text = NDKTool.getStringFromJni()
         }
-//        var path = filesDir.parentFile.absolutePath+"/"
-//        path = "/sdcard/DCIM/"
-//        Thread {
-//            val size = NDKTool.getDirSizeByNative(path)
-//            Log.d("NDKActivity", "size = " + size)
-//        }.start()
+        var path = filesDir.parentFile.absolutePath+"/"
+        path = "/sdcard/DCIM/"
+        Thread {
+            val size = NDKTool.getDirSizeByNative(path)
+            Log.d("NDKActivity", "size = " + size)
+        }.start()
 //        Thread {
 //            val st = System.currentTimeMillis()
 //            val size = dirSize(path)

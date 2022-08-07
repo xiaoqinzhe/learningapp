@@ -111,7 +111,7 @@ int getDirSize(const std::string& path) {
 //    nftwGetDirSize(path);
 //    long count = staticFileCount;
     long count = listdir(path.c_str(),0,0,0,true);
-    LOGD("getDirSize end. fileCount = %d, duration=%ld", count
+    LOGD("getDirSize end. fileCount = %ld, duration=%ld", count
         , getCurrentTime() - startTime);
     return 1;
 }
