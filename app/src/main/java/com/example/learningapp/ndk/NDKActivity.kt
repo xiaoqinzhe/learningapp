@@ -1,5 +1,6 @@
 package com.example.learningapp.ndk
 
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -7,6 +8,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.learningapp.R
+import com.example.learningapp.utils.FileUtil
 import com.example.ndktool.NDKTool
 import java.io.File
 import java.util.*
@@ -25,6 +27,11 @@ class NDKActivity : AppCompatActivity() {
         findViewById<View>(R.id.btn_get_str_jni)?.setOnClickListener {
             viewModel.getStringFromJni()
         }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            FileUtil.getAppSize(this)
+        }
+
         findViewById<View>(R.id.btn_get_dir_size).setOnClickListener {
             var path = filesDir.parentFile.absolutePath+"/"
             path = "/sdcard/DCIM/"
