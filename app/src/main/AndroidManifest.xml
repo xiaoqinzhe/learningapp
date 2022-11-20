@@ -27,7 +27,7 @@
         <activity
             android:name=".aidl.AidlActivity"
             android:exported="false" />
-        <activity android:name=".intent.KotlinTestActivity" />
+        <activity android:name=".kotlin.KotlinTestActivity" />
         <activity
             android:name=".views.KeyboardActivity"
             android:windowSoftInputMode="adjustResize" />

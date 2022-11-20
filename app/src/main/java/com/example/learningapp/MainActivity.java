@@ -27,6 +27,7 @@ import com.example.learningapp.fragments.DummyActivity;
 import com.example.learningapp.intent.StartActivity;
 import com.example.learningapp.jetpack.databinding.DataBindingActivity;
 import com.example.learningapp.kotlin.HelloKotlin;
+import com.example.learningapp.kotlin.KotlinTestActivity;
 import com.example.learningapp.kotlin.coroutine.CoroutineTest;
 import com.example.learningapp.livedata.UserProfileActivity;
 import com.example.learningapp.media.MediaNavActivity;
@@ -46,9 +47,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        HelloKotlin.Companion.getSB();
-        new CoroutineTest().main();
 
         List<String> list = new ArrayList<>();
 
@@ -271,6 +269,11 @@ public class MainActivity extends AppCompatActivity {
 
     public synchronized void startNDK(View view) {
         Intent intent = new Intent(this, NDKActivity.class);
+        startActivity(intent);
+    }
+
+    public synchronized void startKotlinTest(View view) {
+        Intent intent = new Intent(this, KotlinTestActivity.class);
         startActivity(intent);
     }
 }
