@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.example.learningapp.framework.touch.MyLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".framework.touch.TouchEventTestActivity">
+
+    <com.example.learningapp.framework.touch.MyView
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:background="@android:color/darker_gray"/>
+
+    <com.example.learningapp.framework.touch.MyTextView
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginTop="20dp"
+        android:text="textview"
+        android:background="@android:color/darker_gray"/>
+
+    <com.example.learningapp.framework.touch.MyButton
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginTop="20dp"
+        android:text="button"
+        android:background="@android:color/darker_gray"/>
+
+
+</com.example.learningapp.framework.touch.MyLayout>

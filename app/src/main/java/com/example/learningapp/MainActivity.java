@@ -24,6 +24,7 @@ import com.example.learningapp.aidl.AidlActivity;
 import com.example.learningapp.backworker.AsyncActivity;
 import com.example.learningapp.backworker.WorkerActivity;
 import com.example.learningapp.fragments.DummyActivity;
+import com.example.learningapp.framework.touch.TouchEventTestActivity;
 import com.example.learningapp.intent.StartActivity;
 import com.example.learningapp.jetpack.databinding.DataBindingActivity;
 import com.example.learningapp.kotlin.HelloKotlin;
@@ -273,4 +274,10 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, NDKActivity.class);
         startActivity(intent);
     }
+
+    public synchronized void startFWTouchTest(View view) {
+        Intent intent = new Intent(this, TouchEventTestActivity.class);
+        startActivity(intent);
+    }
+
 }
