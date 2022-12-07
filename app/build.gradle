@@ -1,6 +1,5 @@
 import com.example.buildsrc.TransformRegPlugin
 
-apply from: project.file("build-deps.gradle")
 
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
@@ -52,6 +51,8 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation ndktool
+    implementation apt_annotation
+    kapt apt_processor
 
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'

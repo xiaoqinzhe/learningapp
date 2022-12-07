@@ -21,6 +21,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 
 import com.example.learningapp.aidl.AidlActivity;
+import com.example.learningapp.apt.AptTestActivity;
 import com.example.learningapp.backworker.AsyncActivity;
 import com.example.learningapp.backworker.WorkerActivity;
 import com.example.learningapp.fragments.DummyActivity;
@@ -35,11 +36,13 @@ import com.example.learningapp.ndk.NDKActivity;
 import com.example.learningapp.views.RecyclerViewActivity;
 import com.example.learningapp.notification.NotificationActivity;
 import com.example.learningapp.views.ViewNavActivity;
+import com.example.libannotation.BindActivity;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@BindActivity
 public class MainActivity extends AppCompatActivity {
     public static final String EXTRA_MESSAGE = "com.example.myfirstapp.MESSAGE";
 
@@ -274,6 +277,11 @@ public class MainActivity extends AppCompatActivity {
 
     public synchronized void startKotlinTest(View view) {
         Intent intent = new Intent(this, KotlinTestActivity.class);
+        startActivity(intent);
+    }
+
+    public void startAptTest(View view) {
+        Intent intent = new Intent(this, AptTestActivity.class);
         startActivity(intent);
     }
 }
