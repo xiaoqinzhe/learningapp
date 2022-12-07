@@ -25,6 +25,7 @@ import com.example.learningapp.apt.AptTestActivity;
 import com.example.learningapp.backworker.AsyncActivity;
 import com.example.learningapp.backworker.WorkerActivity;
 import com.example.learningapp.fragments.DummyActivity;
+import com.example.learningapp.framework.touch.TouchEventTestActivity;
 import com.example.learningapp.intent.StartActivity;
 import com.example.learningapp.jetpack.databinding.DataBindingActivity;
 import com.example.learningapp.kotlin.HelloKotlin;
@@ -284,4 +285,10 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, AptTestActivity.class);
         startActivity(intent);
     }
+
+    public synchronized void startFWTouchTest(View view) {
+        Intent intent = new Intent(this, TouchEventTestActivity.class);
+        startActivity(intent);
+    }
+
 }

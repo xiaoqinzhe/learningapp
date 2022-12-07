@@ -20,6 +20,9 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".apt.AptTestActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".framework.touch.TouchEventTestActivity"
             android:exported="false" />
         <activity
             android:name=".ndk.NDKActivity"
