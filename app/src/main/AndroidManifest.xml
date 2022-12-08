@@ -21,6 +21,11 @@
         <activity
             android:name=".apt.AptTestActivity"
             android:exported="false"/>
+
+        <activity
+            android:name=".apt.ButterKnifeTestActivity"
+            android:exported="false" />
+
         <activity
             android:name=".framework.touch.TouchEventTestActivity"
             android:exported="false" />

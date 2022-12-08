@@ -22,6 +22,7 @@ import android.widget.Button;
 
 import com.example.learningapp.aidl.AidlActivity;
 import com.example.learningapp.apt.AptTestActivity;
+import com.example.learningapp.apt.ButterKnifeTestActivity;
 import com.example.learningapp.backworker.AsyncActivity;
 import com.example.learningapp.backworker.WorkerActivity;
 import com.example.learningapp.fragments.DummyActivity;
@@ -288,6 +289,11 @@ public class MainActivity extends AppCompatActivity {
 
     public synchronized void startFWTouchTest(View view) {
         Intent intent = new Intent(this, TouchEventTestActivity.class);
+        startActivity(intent);
+    }
+
+    public synchronized void startButterKnifeTest(View view) {
+        Intent intent = new Intent(this, ButterKnifeTestActivity.class);
         startActivity(intent);
     }
 

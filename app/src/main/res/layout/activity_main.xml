@@ -146,6 +146,14 @@
             android:onClick="startFWTouchTest"
             android:text="startFWTouchTest" />
 
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:onClick="startButterKnifeTest"
+            android:text="startButterKnifeTest" />
+
     </LinearLayout>
 
 </ScrollView>
