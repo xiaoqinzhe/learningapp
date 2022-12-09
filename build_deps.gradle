@@ -13,3 +13,8 @@ ext {
 
 
 }
+
+ext.deps = [
+        'butter_knife' : "com.jakewharton:butterknife:10.2.1",
+        'butter_knife_compiler' : "com.jakewharton:butterknife-compiler:10.2.1",
+]

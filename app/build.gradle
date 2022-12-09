@@ -132,8 +132,8 @@ dependencies {
 }
 
 dependencies {
-    implementation butter_knife
-    kapt butter_knife_compiler
+    implementation deps.butter_knife
+    kapt deps.butter_knife_compiler
 }
 
 kapt {
