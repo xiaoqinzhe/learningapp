@@ -5,9 +5,11 @@ import android.os.Bundle
 import android.widget.TextView
 import com.example.learningapp.R
 import com.example.libannotation.BindActivity
+import com.example.libannotation.BindLayouts
 import com.example.libannotation.BindView
 
 @BindActivity
+@BindLayouts(layouts = ["activity_apt_test"])
 class AptTestActivity : AppCompatActivity() {
 
     @BindView(viewId = R.id.title)
