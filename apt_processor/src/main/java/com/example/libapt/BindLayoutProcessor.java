@@ -15,6 +15,7 @@ import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
@@ -40,6 +41,11 @@ public class BindLayoutProcessor extends AbstractProcessor {
         mFiler = processingEnv.getFiler();
         mMessager = processingEnv.getMessager();
         layoutBindingMgr = new LayoutBindingMgr(mElementUtils, mTypeUtils, mFiler, mMessager);
+    }
+
+    @Override
+    public SourceVersion getSupportedSourceVersion() {
+        return SourceVersion.latestSupported();
     }
 
     @Override
