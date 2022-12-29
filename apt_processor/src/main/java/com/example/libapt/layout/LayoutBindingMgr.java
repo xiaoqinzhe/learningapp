@@ -3,6 +3,11 @@ package com.example.libapt.layout;
 import com.example.libannotation.BindLayouts;
 import com.example.libapt.utils.LayoutScanner;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -13,6 +18,9 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 public class LayoutBindingMgr {
 
@@ -22,6 +30,8 @@ public class LayoutBindingMgr {
     private Messager messager; // 日志
 
     private String modulePath;
+
+    private DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 
     public LayoutBindingMgr(Elements elements, Types types, Filer filer, Messager messager) {
         this.elementUtils = elements;
@@ -46,13 +56,29 @@ public class LayoutBindingMgr {
             String path = LayoutScanner.findLayout(modulePath, layoutName, messager);
             if (path == null) {
                 err("handleElement path is null");
+                return;
             }
             note("handleElement path =" + path);
 
             // 2. parse xml
+            try {
+                DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+                Document document = documentBuilder.parse(path);
+                org.w3c.dom.Element elementt = document.getDocumentElement();
+                note("getDocumentElement getTagName()=" + elementt.getTagName());
+                NodeList nodeList = elementt.getChildNodes();
+                for (int i = 0; i < nodeList.getLength(); ++i) {
+                    Node node = nodeList.item(i);
+                    note("Node name=" + node.getNodeName() + "attributes=" + node.getAttributes());
+                }
+            } catch (ParserConfigurationException | SAXException | IOException e) {
+                e.printStackTrace();
+            }
         }
 
     }
+
+
 
     private void initModulePath(Filer filer) {
         try {
@@ -76,6 +102,10 @@ public class LayoutBindingMgr {
 
     private void note(String msg) {
         messager.printMessage(Diagnostic.Kind.NOTE, msg);
+    }
+
+    private void warn(String msg) {
+        messager.printMessage(Diagnostic.Kind.WARNING, msg);
     }
 
     private void err(String msg) {
