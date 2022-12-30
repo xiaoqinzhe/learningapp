@@ -32,23 +32,21 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_launcher_background"/>
+                android:src="@drawable/ic_launcher_background" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/nav_recylerview_comment"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                />
+                android:layout_height="match_parent" />
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_launcher_background"/>
+                android:src="@drawable/ic_launcher_background" />
 
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
-
 
 
     <Button
@@ -72,6 +70,7 @@
         app:layout_constraintEnd_toStartOf="@+id/btn_nav_recylerview_update"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/btn_nav_recylerview_add"
+        app:layout_constraintBottom_toBottomOf="@+id/btn_nav_recylerview_add"
         app:layout_constraintTop_toTopOf="@+id/btn_nav_recylerview_add" />
 
     <Button
@@ -80,9 +79,34 @@
         android:layout_height="wrap_content"
         android:onClick="updateComments"
         android:text="update"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/btn_nav_recylerview_payload"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/btn_nav_recylerview_del"
-        app:layout_constraintTop_toTopOf="@+id/btn_nav_recylerview_del" />
+        app:layout_constraintBottom_toBottomOf="@+id/btn_nav_recylerview_add"
+        app:layout_constraintTop_toTopOf="@+id/btn_nav_recylerview_add" />
+
+    <Button
+        android:id="@+id/btn_nav_recylerview_payload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="updateCommentsByPayloads"
+        android:text="payload"
+        app:layout_constraintEnd_toStartOf="@+id/btn_nav_recylerview_diffutil"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/btn_nav_recylerview_update"
+        app:layout_constraintBottom_toBottomOf="@+id/btn_nav_recylerview_add"
+        app:layout_constraintTop_toTopOf="@+id/btn_nav_recylerview_add" />
+
+    <Button
+        android:id="@+id/btn_nav_recylerview_diffutil"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="updateCommentsByDiffUtil"
+        android:text="diffutil"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/btn_nav_recylerview_payload"
+        app:layout_constraintBottom_toBottomOf="@+id/btn_nav_recylerview_add"
+        app:layout_constraintTop_toTopOf="@+id/btn_nav_recylerview_add" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

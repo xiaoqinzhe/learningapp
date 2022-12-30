@@ -1,7 +1,11 @@
 package com.example.learningapp.views;
 
+import static com.example.learningapp.views.RecyclerViewActivity.TAG;
+
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -28,8 +32,9 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RecyclerViewActivity extends AppCompatActivity implements MyCommentItemRecycleViewAdapter.OnCommentInterationListener {
+public class RecyclerViewActivity extends AppCompatActivity {
 
+    public static final String TAG = "RecyclerViewActivity";
     private RecyclerView mCommentRecyclerView;
     private MyCommentItemRecycleViewAdapter commentAdapter;
 
@@ -40,6 +45,7 @@ public class RecyclerViewActivity extends AppCompatActivity implements MyComment
     private int[] imageIds = new int[]{R.drawable.ic_launcher_background, R.drawable.ic_launcher_background,
             R.drawable.ic_launcher_background, R.drawable.ic_launcher_background,
             R.drawable.ic_launcher_background, R.drawable.ic_launcher_background};
+    private int totalSize;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +78,7 @@ public class RecyclerViewActivity extends AppCompatActivity implements MyComment
 
         initData();
 
-        commentAdapter = new MyCommentItemRecycleViewAdapter(comments, this);
+        commentAdapter = new MyCommentItemRecycleViewAdapter(comments);
         mCommentRecyclerView.setAdapter(commentAdapter);
 
         mCommentRecyclerView.setOnFlingListener(new RecyclerView.OnFlingListener() {
@@ -81,6 +87,18 @@ public class RecyclerViewActivity extends AppCompatActivity implements MyComment
                 return false;
             }
         });
+
+        // 缓存
+        mCommentRecyclerView.setItemViewCacheSize(4);
+
+        RecyclerView.RecycledViewPool recycledViewPool = new RecyclerView.RecycledViewPool();
+        recycledViewPool.putRecycledView(commentAdapter.onCreateViewHolder(mCommentRecyclerView, 0));
+        recycledViewPool.putRecycledView(commentAdapter.onCreateViewHolder(mCommentRecyclerView, 1));
+        mCommentRecyclerView.setRecycledViewPool(recycledViewPool);
+
+
+        // Payload DiffUtils
+
 
         // 启动任务通过网络等读取数据，再更新adapter
 
@@ -93,17 +111,18 @@ public class RecyclerViewActivity extends AppCompatActivity implements MyComment
 
         for(int i=0; i<10; ++i){
             int resId = i%2==0? R.drawable.ic_launcher_background : R.drawable.ic_launcher_foreground;
-            Comment comment = new Comment(resId, "person"+i, "comment"+i);
+            Comment comment = new Comment(i, resId, "person"+i, "comment"+i);
             comments.add(comment);
         }
+        totalSize = 10;
     }
 
     public void addComments(View view){
-        int i = (int)(Math.random()*(comments.size()+1));
+        int i = totalSize++;
         int resId = i%2==0? R.drawable.ic_launcher_background : R.drawable.ic_launcher_foreground;
-        Comment newComment = new Comment(resId, "newName"+i, "newComment"+i);
+        Comment newComment = new Comment(i, resId, "newName"+i, "newComment"+i);
         comments.add(1, newComment);
-        commentAdapter.notifyItemInserted(1);
+        commentAdapter.notifyItemInserted(comments.size() - 1);
 //        commentAdapter.notifyItemRangeChanged(i, commentAdapter.getItemCount());
     }
 
@@ -113,14 +132,67 @@ public class RecyclerViewActivity extends AppCompatActivity implements MyComment
 //        commentAdapter.notifyItemRangeChanged(2, commentAdapter.getItemCount());
     }
 
+    public void updateCommentsByPayloads(View view){
+        Comment comment = comments.get(0);
+        comment.personComment = "payload comment";
+        commentAdapter.notifyItemChanged(0, new CommentPayload(CommentPayload.PAYLOAD_COMMENT));
+    }
+
+    public void updateCommentsByDiffUtil(View view) {
+        List<Comment> oldComments = comments;
+        List<Comment> newComments = new ArrayList<>();
+        for(int i=0; i<10; ++i){
+            int resId = i%2==0? R.drawable.ic_launcher_background : R.drawable.ic_launcher_foreground;
+            Comment comment = new Comment(i, resId, "person"+i, "comment"+i);
+            if (i % 3 == 0) {
+                comment.personComment = "NewCommentsByDiffUtil";
+            }
+            newComments.add(comment);
+        }
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new DiffUtil.Callback() {
+            @Override
+            public int getOldListSize() {
+                return oldComments.size();
+            }
+
+            @Override
+            public int getNewListSize() {
+                return newComments.size();
+            }
+
+            @Override
+            public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+                return oldComments.get(oldItemPosition).commentId == newComments.get(newItemPosition).commentId;
+            }
+
+            @Override
+            public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+                Comment oldComment = oldComments.get(oldItemPosition);
+                Comment newComment = newComments.get(oldItemPosition);
+                Log.d(TAG, "areContentsTheSame oldComment=" + oldComment+ "   newComments=" + newComments);
+                return oldComment.personComment.equals(newComment.personComment);
+            }
+
+            @Nullable
+            @Override
+            public Object getChangePayload(int oldItemPosition, int newItemPosition) {
+                Comment oldComment = oldComments.get(oldItemPosition);
+                Comment newComment = newComments.get(oldItemPosition);
+                Log.d(TAG, "areContentsTheSame oldComment=" + oldComment+ "   newComments=" + newComments);
+                return new CommentPayload(CommentPayload.PAYLOAD_COMMENT);
+            }
+        });
+
+        oldComments.clear();
+        oldComments.addAll(newComments);
+
+        diffResult.dispatchUpdatesTo(commentAdapter);
+
+    }
+
     public void updateComments(View view){
         updateCommentAsyncTask = new UpdateCommentAsyncTask(this);
         updateCommentAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-    }
-
-    @Override
-    public void onCommentClick(View view, Comment comment) {
-        Toast.makeText(this, "click comment "+comment.personName, Toast.LENGTH_SHORT).show();
     }
 
     public void updateComments(List<Comment> comments) {
@@ -140,20 +212,32 @@ public class RecyclerViewActivity extends AppCompatActivity implements MyComment
             updateCommentAsyncTask.cancel(true);
         }
     }
+
+}
+
+class CommentPayload {
+    public static final int PAYLOAD_COMMENT = 1;
+
+    public int type;
+
+    public CommentPayload(int type) {
+        this.type = type;
+    }
+
+    @Override
+    public String toString() {
+        return "CommentPayload{" +
+                "type=" + type +
+                '}';
+    }
 }
 
 class MyCommentItemRecycleViewAdapter extends RecyclerView.Adapter<MyCommentItemRecycleViewAdapter.CommentViewHolder>{
 
     private List<Comment> comments;
-    private OnCommentInterationListener mListener;
 
     public MyCommentItemRecycleViewAdapter(List<Comment> comments){
-         this(comments, null);
-    }
-
-    public MyCommentItemRecycleViewAdapter(List<Comment> comments, OnCommentInterationListener listener){
         this.comments = comments;
-        mListener = listener;
     }
 
     @NonNull
@@ -162,6 +246,23 @@ class MyCommentItemRecycleViewAdapter extends RecyclerView.Adapter<MyCommentItem
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_nav_recylerview_comment, parent, false);
         Log.i("RecyclerViewActivity", "recyclerView onCreateViewHolder...");
         return new CommentViewHolder(view);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull CommentViewHolder holder, int position, @NonNull List<Object> payloads) {
+        super.onBindViewHolder(holder, position, payloads);
+        // 局部更新comment
+        if (payloads.isEmpty()) {
+            onBindViewHolder(holder, position);
+        } else {
+            Log.d(TAG, "onBind by payload " + payloads);
+            Comment comment = comments.get(position);
+            for (Object obj: payloads) {
+                if (obj instanceof CommentPayload) {
+                    holder.tvComment.setText(comment.personComment);
+                }
+            }
+        }
     }
 
     @Override
@@ -180,17 +281,15 @@ class MyCommentItemRecycleViewAdapter extends RecyclerView.Adapter<MyCommentItem
 //                    Toast.makeText(contextWeakReference.get(), name + " " + getAdapterPosition(), Toast.LENGTH_SHORT).show();
 //            }
 //        };
-        if (mListener != null) {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     // position是不变的！！当添加删除时会获取错数据
                     // 改进： 使用holder保存数据，或者调用holder.getLayoutPosition
                     int pos = holder.getLayoutPosition();
-                    mListener.onCommentClick(v, comments.get(pos));
+                    Toast.makeText(v.getContext(), "click comment " + comments.get(pos).personName, Toast.LENGTH_SHORT).show();
                 }
             });
-        }
     }
 
     @Override
@@ -199,16 +298,17 @@ class MyCommentItemRecycleViewAdapter extends RecyclerView.Adapter<MyCommentItem
         return comments.size();
     }
 
+    @Override
+    public int getItemViewType(int position) {
+        return comments.get(position).commentType;
+    }
+
     public List<Comment> getComments() {
         return comments;
     }
 
     public void setComments(List<Comment> comments) {
         this.comments = comments;
-    }
-
-    public void setItemInterationListener(OnCommentInterationListener mListener) {
-        this.mListener = mListener;
     }
 
     class CommentViewHolder extends RecyclerView.ViewHolder{
@@ -230,10 +330,6 @@ class MyCommentItemRecycleViewAdapter extends RecyclerView.Adapter<MyCommentItem
         }
     }
 
-    interface OnCommentInterationListener{
-        void onCommentClick(View view, Comment comment);
-    }
-
 }
 
 class UpdateCommentAsyncTask extends AsyncTask<String, Integer, List<Comment>>{
@@ -250,7 +346,7 @@ class UpdateCommentAsyncTask extends AsyncTask<String, Integer, List<Comment>>{
         try {
             Thread.sleep(2000);
             for (int i=0; i<10; ++i){
-                commentList.add(new Comment(R.drawable.ic_launcher_foreground, "newName "+i, "updated comment"));
+                commentList.add(new Comment(i, R.drawable.ic_launcher_foreground, "newName "+i, "updated comment"));
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -268,13 +364,28 @@ class UpdateCommentAsyncTask extends AsyncTask<String, Integer, List<Comment>>{
 }
 
 class Comment{
+    public int commentId;
+    public int commentType;
     public int personPic;
     public String personName;
     public String personComment;
 
-    public Comment(int personPic, String personName, String personComment) {
+    public Comment(int commentId, int personPic, String personName, String personComment) {
+        this.commentId = commentId;
+        commentType = commentId % 2;
         this.personPic = personPic;
         this.personName = personName;
         this.personComment = personComment;
+    }
+
+    @Override
+    public String toString() {
+        return "Comment{" +
+                "commentId=" + commentId +
+                ", commentType=" + commentType +
+                ", personPic=" + personPic +
+                ", personName='" + personName + '\'' +
+                ", personComment='" + personComment + '\'' +
+                '}';
     }
 }
