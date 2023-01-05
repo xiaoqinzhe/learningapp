@@ -149,6 +149,8 @@ public class RecyclerViewActivity extends AppCompatActivity {
             }
             newComments.add(comment);
         }
+
+        // 可异步
         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new DiffUtil.Callback() {
             @Override
             public int getOldListSize() {
@@ -186,6 +188,7 @@ public class RecyclerViewActivity extends AppCompatActivity {
         oldComments.clear();
         oldComments.addAll(newComments);
 
+        // ui线程
         diffResult.dispatchUpdatesTo(commentAdapter);
 
     }
