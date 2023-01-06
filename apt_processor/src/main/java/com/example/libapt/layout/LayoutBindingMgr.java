@@ -2,18 +2,22 @@ package com.example.libapt.layout;
 
 import com.example.libannotation.BindLayouts;
 import com.example.libapt.utils.LayoutScanner;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeSpec;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import java.io.File;
 import java.io.IOException;
 
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
@@ -61,24 +65,58 @@ public class LayoutBindingMgr {
             note("handleElement path =" + path);
 
             // 2. parse xml
+            note("parse xml...");
+            String layoutClassName = LayoutBindingConfig.getLayoutClassName(layoutName);
+            TypeSpec.Builder typeSpecBuilder = TypeSpec.classBuilder(layoutClassName)
+                    .addModifiers(Modifier.PUBLIC);
             try {
                 DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
                 Document document = documentBuilder.parse(path);
-                org.w3c.dom.Element elementt = document.getDocumentElement();
-                note("getDocumentElement getTagName()=" + elementt.getTagName());
-                NodeList nodeList = elementt.getChildNodes();
-                for (int i = 0; i < nodeList.getLength(); ++i) {
-                    Node node = nodeList.item(i);
-                    note("Node name=" + node.getNodeName() + "attributes=" + node.getAttributes());
-                }
+                org.w3c.dom.Element documentElement = document.getDocumentElement();
+                MethodSpec.Builder methodSpecBuild = MethodSpec.methodBuilder("inflate");
+                transversalNode(documentElement, typeSpecBuilder, methodSpecBuild);
+                typeSpecBuilder.addMethod(methodSpecBuild.build());
             } catch (ParserConfigurationException | SAXException | IOException e) {
-                e.printStackTrace();
+                err(e.getMessage());
+            }
+
+            // 3. write file
+            TypeSpec typeSpec = typeSpecBuilder.build();
+            JavaFile javaFile = JavaFile.builder(LayoutBindingConfig.GENERATED_PACKAGE_NAME, typeSpec).build();
+            try {
+                javaFile.writeTo(filer);
+            } catch (IOException e) {
+                err(e.getMessage());
             }
         }
 
     }
 
+    private void transversalNode(Node node, TypeSpec.Builder typeSpecBuilder, MethodSpec.Builder methodSpecBuild) {
+        // parse node and attrs
+        NodeList nodeList = node.getChildNodes();
+        note("Node type = " + node.getNodeType() +
+                ", name = " + node.getNodeName() +
+                ", value = " + node.getNodeValue());
+        parseAttributes(node);
+        for (int i = 0; i < nodeList.getLength(); ++i) {
+            Node childNode = nodeList.item(i);
+            if (childNode.getNodeType() == Node.ELEMENT_NODE) {
+                transversalNode(childNode, typeSpecBuilder, methodSpecBuild);
+            }
+        }
+    }
 
+    private void parseAttributes(Node node) {
+        NamedNodeMap map = node.getAttributes();
+        if (map == null) return;
+        for (int i = 0; i < map.getLength(); ++i) {
+            Node attr = map.item(i);
+            note("Node type = " + attr.getNodeType() +
+                    ", name = " + attr.getNodeName() +
+                    ", value = " + attr.getNodeValue());
+        }
+    }
 
     private void initModulePath(Filer filer) {
         try {
