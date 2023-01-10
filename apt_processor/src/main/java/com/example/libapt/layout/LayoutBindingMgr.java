@@ -73,9 +73,10 @@ public class LayoutBindingMgr {
                 DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
                 Document document = documentBuilder.parse(path);
                 org.w3c.dom.Element documentElement = document.getDocumentElement();
-                MethodSpec.Builder methodSpecBuild = MethodSpec.methodBuilder("inflate");
-                transversalNode(documentElement, typeSpecBuilder, methodSpecBuild);
-                typeSpecBuilder.addMethod(methodSpecBuild.build());
+                MethodSpec.Builder methodSpecBuilder = MethodSpec.methodBuilder("createView");
+                LayoutParseContext parseContext = new LayoutParseContext(typeSpecBuilder, methodSpecBuilder);
+                transversalNode(documentElement, parseContext, null);
+                typeSpecBuilder.addMethod(methodSpecBuilder.build());
             } catch (ParserConfigurationException | SAXException | IOException e) {
                 err(e.getMessage());
             }
@@ -92,30 +93,34 @@ public class LayoutBindingMgr {
 
     }
 
-    private void transversalNode(Node node, TypeSpec.Builder typeSpecBuilder, MethodSpec.Builder methodSpecBuild) {
+    private void transversalNode(Node node, LayoutParseContext parseContext, NodeParseInfo parentInfo) {
         // parse node and attrs
         NodeList nodeList = node.getChildNodes();
-        note("Node type = " + node.getNodeType() +
-                ", name = " + node.getNodeName() +
-                ", value = " + node.getNodeValue());
-        parseAttributes(node);
+        NodeParseInfo nodeParseInfo = parseNode(node, parseContext, parentInfo);
         for (int i = 0; i < nodeList.getLength(); ++i) {
             Node childNode = nodeList.item(i);
             if (childNode.getNodeType() == Node.ELEMENT_NODE) {
-                transversalNode(childNode, typeSpecBuilder, methodSpecBuild);
+                transversalNode(childNode, parseContext, nodeParseInfo);
             }
         }
     }
 
-    private void parseAttributes(Node node) {
+    private NodeParseInfo parseNode(Node node, LayoutParseContext parseContext, NodeParseInfo parentInfo) {
+        note("parseNode Node type = " + node.getNodeType() +
+                ", name = " + node.getNodeName() +
+                ", value = " + node.getNodeValue());
+        // new View()
+        // setAttr, setLayoutParams
+        // parent.addView
         NamedNodeMap map = node.getAttributes();
-        if (map == null) return;
+        if (map == null) return parentInfo;
         for (int i = 0; i < map.getLength(); ++i) {
             Node attr = map.item(i);
-            note("Node type = " + attr.getNodeType() +
+            note("parseNode attr type = " + attr.getNodeType() +
                     ", name = " + attr.getNodeName() +
                     ", value = " + attr.getNodeValue());
         }
+        return new NodeParseInfo();
     }
 
     private void initModulePath(Filer filer) {
@@ -148,6 +153,20 @@ public class LayoutBindingMgr {
 
     private void err(String msg) {
         messager.printMessage(Diagnostic.Kind.ERROR, msg);
+    }
+
+    private static class LayoutParseContext {
+        TypeSpec.Builder typeSpecBuilder;
+        MethodSpec.Builder methodSpecBuilder;
+
+        public LayoutParseContext(TypeSpec.Builder typeSpecBuilder, MethodSpec.Builder methodSpecBuilder) {
+            this.typeSpecBuilder = typeSpecBuilder;
+            this.methodSpecBuilder = methodSpecBuilder;
+        }
+    }
+
+    private static class NodeParseInfo {
+
     }
 
 }
