@@ -109,9 +109,12 @@ public class LayoutBindingMgr {
         note("parseNode Node type = " + node.getNodeType() +
                 ", name = " + node.getNodeName() +
                 ", value = " + node.getNodeValue());
-        // new View()
-        // setAttr, setLayoutParams
-        // parent.addView
+        /**
+         * view = new View()
+         * view.setAttr
+         * lp = new LayoutParams(); view.setLP(lp)
+         * parent.addView(view)
+         */
         NamedNodeMap map = node.getAttributes();
         if (map == null) return parentInfo;
         for (int i = 0; i < map.getLength(); ++i) {
