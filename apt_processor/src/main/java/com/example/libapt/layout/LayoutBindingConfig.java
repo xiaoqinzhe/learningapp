@@ -1,11 +1,31 @@
 package com.example.libapt.layout;
 
+import com.example.libapt.layout.viewparser.IViewParser;
+import com.example.libapt.layout.viewparser.LinearLayoutParser;
+import com.example.libapt.layout.viewparser.TextViewParser;
+import com.example.libapt.layout.viewparser.ViewGroupParser;
+import com.example.libapt.layout.viewparser.ViewParser;
+import com.squareup.javapoet.ClassName;
+
+import java.util.HashMap;
+import java.util.Map;
+
 public class LayoutBindingConfig {
 
     public static final String GENERATED_PACKAGE_NAME = "com.example.generated.layout";
 
     public static final String LAYOUT_NAME_SUFFIX = "LayoutBinding";
 
+    public static final ClassName CONTEXT = ClassName.get("android.content", "Context");
+
+    private static final Map<String, IViewParser> viewParserMap = new HashMap<>();
+
+    static {
+        viewParserMap.put("View", new ViewParser());
+        viewParserMap.put("ViewGroup", new ViewGroupParser());
+        viewParserMap.put("LinearLayout", new LinearLayoutParser());
+        viewParserMap.put("TextView", new TextViewParser());
+    }
 
     public static String getLayoutClassName(String layoutName) {
         StringBuilder sb = new StringBuilder();
@@ -17,6 +37,10 @@ public class LayoutBindingConfig {
         }
         sb.append(LAYOUT_NAME_SUFFIX);
         return sb.toString();
+    }
+
+    public static IViewParser getViewParser(String name) {
+        return viewParserMap.get(name);
     }
 
 }

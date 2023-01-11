@@ -1,7 +1,10 @@
 package com.example.libapt.layout;
 
 import com.example.libannotation.BindLayouts;
+import com.example.libapt.layout.viewparser.IViewParser;
+import com.example.libapt.layout.viewparser.ViewParser;
 import com.example.libapt.utils.LayoutScanner;
+import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
@@ -73,7 +76,8 @@ public class LayoutBindingMgr {
                 DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
                 Document document = documentBuilder.parse(path);
                 org.w3c.dom.Element documentElement = document.getDocumentElement();
-                MethodSpec.Builder methodSpecBuilder = MethodSpec.methodBuilder("createView");
+                MethodSpec.Builder methodSpecBuilder = MethodSpec.methodBuilder("createView")
+                        .addParameter(LayoutBindingConfig.CONTEXT, "context");
                 LayoutParseContext parseContext = new LayoutParseContext(typeSpecBuilder, methodSpecBuilder);
                 transversalNode(documentElement, parseContext, null);
                 typeSpecBuilder.addMethod(methodSpecBuilder.build());
@@ -97,6 +101,9 @@ public class LayoutBindingMgr {
         // parse node and attrs
         NodeList nodeList = node.getChildNodes();
         NodeParseInfo nodeParseInfo = parseNode(node, parseContext, parentInfo);
+        if (nodeParseInfo == null) {
+            return;
+        }
         for (int i = 0; i < nodeList.getLength(); ++i) {
             Node childNode = nodeList.item(i);
             if (childNode.getNodeType() == Node.ELEMENT_NODE) {
@@ -115,15 +122,59 @@ public class LayoutBindingMgr {
          * lp = new LayoutParams(); view.setLP(lp)
          * parent.addView(view)
          */
+        String nodeName = node.getNodeName();
+        IViewParser viewParser = LayoutBindingConfig.getViewParser(nodeName);
+        if (viewParser == null) {
+            note("viewParser is null. node=" + nodeName);
+            return null;
+        }
+        String viewVarName = "view" + parseContext.viewNameIndex;
+        ClassName viewClass = null;
+        if (nodeName.contains(".")) {
+            // todo
+        } else {
+            viewClass = viewParser.getClassName();
+        }
+        parseContext.methodSpecBuilder.addStatement("$T $N = new $T(context)", viewClass, viewVarName, viewClass);
+
+        String lpVarName = "lp" + parseContext.viewNameIndex++;
+
+        IViewParser parentViewParser;
+        if (parentInfo == null) {
+            parentViewParser = LayoutBindingConfig.getViewParser("ViewGroup");
+        } else {
+            parentViewParser = parentInfo.viewParser;
+        }
+        ClassName lpClsName = parentViewParser.getLPClassName();
+        parseContext.methodSpecBuilder.addStatement("$T $N = new $T($T.WRAP_CONTENT, $T.WRAP_CONTENT)",
+                lpClsName, lpVarName, lpClsName, lpClsName, lpClsName);
+
         NamedNodeMap map = node.getAttributes();
         if (map == null) return parentInfo;
         for (int i = 0; i < map.getLength(); ++i) {
             Node attr = map.item(i);
+            String attrName = attr.getNodeName();
+            String attrValue = attr.getNodeValue();
+
             note("parseNode attr type = " + attr.getNodeType() +
-                    ", name = " + attr.getNodeName() +
-                    ", value = " + attr.getNodeValue());
+                    ", name = " + attrName +
+                    ", value = " + attrValue);
+
+            if (attrName.startsWith("android:layout_")) {
+                // lp
+                parentViewParser.setLayoutAttr(parseContext.methodSpecBuilder, lpVarName, attrName, attrValue, messager);
+            } else {
+                // attr
+                viewParser.setAttr(parseContext.methodSpecBuilder, viewVarName, attrName, attrValue, messager);
+            }
         }
-        return new NodeParseInfo();
+
+        parseContext.methodSpecBuilder.addStatement("$L.setLayoutParams($L)", viewVarName, lpVarName);
+        if (parentInfo != null) {
+            parseContext.methodSpecBuilder.addStatement("$L.addView($L)", parentInfo.viewVarName, viewVarName);
+        }
+
+        return new NodeParseInfo(viewVarName, viewParser);
     }
 
     private void initModulePath(Filer filer) {
@@ -161,6 +212,7 @@ public class LayoutBindingMgr {
     private static class LayoutParseContext {
         TypeSpec.Builder typeSpecBuilder;
         MethodSpec.Builder methodSpecBuilder;
+        int viewNameIndex;
 
         public LayoutParseContext(TypeSpec.Builder typeSpecBuilder, MethodSpec.Builder methodSpecBuilder) {
             this.typeSpecBuilder = typeSpecBuilder;
@@ -169,6 +221,13 @@ public class LayoutBindingMgr {
     }
 
     private static class NodeParseInfo {
+        String viewVarName;
+        IViewParser viewParser;
+
+        public NodeParseInfo(String viewVarName, IViewParser viewParser) {
+            this.viewVarName = viewVarName;
+            this.viewParser = viewParser;
+        }
 
     }
 
