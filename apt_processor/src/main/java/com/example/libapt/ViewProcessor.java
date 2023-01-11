@@ -4,6 +4,7 @@ import com.example.libannotation.BindActivity;
 import com.example.libannotation.BindView;
 import com.google.auto.service.AutoService;
 import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
@@ -91,10 +92,15 @@ public class ViewProcessor extends AbstractProcessor {
                 if (bindView == null) {
                     continue;
                 }
-                methodBuilder.addStatement(
-                        String.format("activity.%s = (%s) activity.findViewById(%d)",
-                                member.getSimpleName(), ClassName.get(member.asType()), bindView.viewId())
-                );
+
+                methodBuilder.addStatement("activity.$L = ($T) activity.findViewById($L)",
+                        member.getSimpleName(), member.asType(), bindView.viewId());
+//                methodBuilder.addStatement(
+//                        String.format("activity.%s = (%s) activity.findViewById(%d)",
+//                                member.getSimpleName(), ClassName.get(member.asType()), bindView.viewId())
+//                );
+                CodeBlock.Builder builder = CodeBlock.builder();
+                builder.addStatement("");
             }
             TypeSpec typeSpec = TypeSpec.classBuilder("BindView" + typeElement.getSimpleName())
                     .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
