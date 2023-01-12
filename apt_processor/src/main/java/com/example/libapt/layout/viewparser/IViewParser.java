@@ -1,5 +1,6 @@
 package com.example.libapt.layout.viewparser;
 
+import com.example.libapt.layout.LayoutBindingMgr;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
 
@@ -11,7 +12,7 @@ public interface IViewParser {
 
     ClassName getLPClassName();
 
-    void setAttr(MethodSpec.Builder methodSpecBuilder, String viewVarName, String attrName, String attrValue, Messager messager);
+    void setAttr(LayoutBindingMgr.LayoutParseContext parseContext, String viewVarName, String attrName, String attrValue, Messager messager);
 
     void setLayoutAttr(MethodSpec.Builder methodSpecBuilder, String lpVarName, String attrName, String attrValue, Messager messager);
 }

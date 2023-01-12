@@ -1,7 +1,7 @@
 package com.example.libapt.layout.viewparser;
 
+import com.example.libapt.layout.LayoutBindingMgr;
 import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.MethodSpec;
 
 import javax.annotation.processing.Messager;
 
@@ -13,14 +13,14 @@ public class LinearLayoutParser extends ViewGroupParser {
     }
 
     @Override
-    public void setAttr(MethodSpec.Builder methodSpecBuilder, String viewVarName, String attrName, String attrValue, Messager messager) {
+    public void setAttr(LayoutBindingMgr.LayoutParseContext parseContext, String viewVarName, String attrName, String attrValue, Messager messager) {
         switch (attrName) {
             case "android:orientation":
-                methodSpecBuilder.addStatement("$N.setOrientation($L)", viewVarName,
+                parseContext.methodSpecBuilder.addStatement("$N.setOrientation($L)", viewVarName,
                         attrValue.equals("vertical") ? "LinearLayout.VERTICAL" : "LinearLayout.HORIZONTAL");
                 return;
         }
-        super.setAttr(methodSpecBuilder, viewVarName, attrName, attrValue, messager);
+        super.setAttr(parseContext, viewVarName, attrName, attrValue, messager);
     }
 
 }

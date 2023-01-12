@@ -77,6 +77,8 @@ public class LayoutBindingMgr {
                 Document document = documentBuilder.parse(path);
                 org.w3c.dom.Element documentElement = document.getDocumentElement();
                 MethodSpec.Builder methodSpecBuilder = MethodSpec.methodBuilder("createView")
+                        .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                        .returns(LayoutBindingConfig.VIEW)
                         .addParameter(LayoutBindingConfig.CONTEXT, "context");
                 LayoutParseContext parseContext = new LayoutParseContext(typeSpecBuilder, methodSpecBuilder);
                 transversalNode(documentElement, parseContext, null);
@@ -109,6 +111,10 @@ public class LayoutBindingMgr {
             if (childNode.getNodeType() == Node.ELEMENT_NODE) {
                 transversalNode(childNode, parseContext, nodeParseInfo);
             }
+        }
+
+        if (parentInfo == null) {
+            parseContext.methodSpecBuilder.addStatement("return $L", nodeParseInfo.viewVarName);
         }
     }
 
@@ -165,7 +171,7 @@ public class LayoutBindingMgr {
                 parentViewParser.setLayoutAttr(parseContext.methodSpecBuilder, lpVarName, attrName, attrValue, messager);
             } else {
                 // attr
-                viewParser.setAttr(parseContext.methodSpecBuilder, viewVarName, attrName, attrValue, messager);
+                viewParser.setAttr(parseContext, viewVarName, attrName, attrValue, messager);
             }
         }
 
@@ -209,9 +215,11 @@ public class LayoutBindingMgr {
         messager.printMessage(Diagnostic.Kind.ERROR, msg);
     }
 
-    private static class LayoutParseContext {
-        TypeSpec.Builder typeSpecBuilder;
-        MethodSpec.Builder methodSpecBuilder;
+    public static class LayoutParseContext {
+        public TypeSpec.Builder typeSpecBuilder;
+        public MethodSpec.Builder methodSpecBuilder;
+        // todo pkg search
+        public ClassName R_CLASS = ClassName.get("com.example.learningapp", "R");
         int viewNameIndex;
 
         public LayoutParseContext(TypeSpec.Builder typeSpecBuilder, MethodSpec.Builder methodSpecBuilder) {

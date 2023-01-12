@@ -3,6 +3,7 @@ package com.example.learningapp.apt
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.TextView
+import com.example.generated.layout.ActivityAptTestLayoutBinding
 import com.example.learningapp.R
 import com.example.libannotation.BindActivity
 import com.example.libannotation.BindLayouts
@@ -17,8 +18,8 @@ class AptTestActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_apt_test)
+        setContentView(ActivityAptTestLayoutBinding.createView(this))
         BindViewAptTestActivity.bindViews(this)
-        titleTv.setText("from apt")
+        titleTv.setText(getString(com.example.ndktool.R.string.test_string))
     }
 }
