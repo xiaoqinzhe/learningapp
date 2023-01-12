@@ -20,6 +20,6 @@ class AptTestActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(ActivityAptTestLayoutBinding.createView(this))
         BindViewAptTestActivity.bindViews(this)
-        titleTv.setText(getString(com.example.ndktool.R.string.test_string))
+        // titleTv.setText(getString(R.string.test_string))
     }
 }
