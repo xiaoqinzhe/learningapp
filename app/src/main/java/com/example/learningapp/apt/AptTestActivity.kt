@@ -18,8 +18,11 @@ class AptTestActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(ActivityAptTestLayoutBinding.createView(this))
-        BindViewAptTestActivity.bindViews(this)
-        // titleTv.setText(getString(R.string.test_string))
+        val binding = ActivityAptTestLayoutBinding()
+        setContentView(binding.createView(this))
+        titleTv = binding.title
+
+//        BindViewAptTestActivity.bindViews(this)
+         titleTv.setText("title not null")
     }
 }

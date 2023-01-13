@@ -77,7 +77,7 @@ public class LayoutBindingMgr {
                 Document document = documentBuilder.parse(path);
                 org.w3c.dom.Element documentElement = document.getDocumentElement();
                 MethodSpec.Builder methodSpecBuilder = MethodSpec.methodBuilder("createView")
-                        .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                        .addModifiers(Modifier.PUBLIC)
                         .returns(LayoutBindingConfig.VIEW)
                         .addParameter(LayoutBindingConfig.CONTEXT, "context");
                 LayoutParseContext parseContext = new LayoutParseContext(typeSpecBuilder, methodSpecBuilder);
@@ -106,6 +106,7 @@ public class LayoutBindingMgr {
         if (nodeParseInfo == null) {
             return;
         }
+
         for (int i = 0; i < nodeList.getLength(); ++i) {
             Node childNode = nodeList.item(i);
             if (childNode.getNodeType() == Node.ELEMENT_NODE) {
@@ -143,6 +144,11 @@ public class LayoutBindingMgr {
         }
         parseContext.methodSpecBuilder.addStatement("$T $N = new $T(context)", viewClass, viewVarName, viewClass);
 
+        if (parentInfo == null) {
+            parseContext.typeSpecBuilder.addField(viewClass, "rootView", Modifier.PUBLIC);
+            parseContext.methodSpecBuilder.addStatement("rootView=" + viewVarName);
+        }
+
         String lpVarName = "lp" + parseContext.viewNameIndex++;
 
         IViewParser parentViewParser;
@@ -168,9 +174,16 @@ public class LayoutBindingMgr {
 
             if (attrName.startsWith("android:layout_")) {
                 // lp
-                parentViewParser.setLayoutAttr(parseContext.methodSpecBuilder, lpVarName, attrName, attrValue, messager);
+                parentViewParser.setLayoutAttr(parseContext, lpVarName, attrName, attrValue, messager);
             } else {
                 // attr
+                if (attrName.equals("android:id")) {
+                    // add view field
+                    String viewId = attrValue.substring(5);
+                    String viewFieldName = LayoutBindingConfig.getViewName(viewId);
+                    parseContext.typeSpecBuilder.addField(viewClass, viewFieldName, Modifier.PUBLIC);
+                    parseContext.methodSpecBuilder.addStatement(viewFieldName + " = " + viewVarName);
+                }
                 viewParser.setAttr(parseContext, viewVarName, attrName, attrValue, messager);
             }
         }
@@ -180,7 +193,7 @@ public class LayoutBindingMgr {
             parseContext.methodSpecBuilder.addStatement("$L.addView($L)", parentInfo.viewVarName, viewVarName);
         }
 
-        return new NodeParseInfo(viewVarName, viewParser);
+        return new NodeParseInfo(viewVarName, viewParser, viewClass);
     }
 
     private void initModulePath(Filer filer) {
@@ -231,10 +244,12 @@ public class LayoutBindingMgr {
     private static class NodeParseInfo {
         String viewVarName;
         IViewParser viewParser;
+        ClassName viewClass;
 
-        public NodeParseInfo(String viewVarName, IViewParser viewParser) {
+        public NodeParseInfo(String viewVarName, IViewParser viewParser, ClassName viewClass) {
             this.viewVarName = viewVarName;
             this.viewParser = viewParser;
+            this.viewClass = viewClass;
         }
 
     }

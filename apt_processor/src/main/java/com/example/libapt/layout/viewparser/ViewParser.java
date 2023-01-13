@@ -2,7 +2,6 @@ package com.example.libapt.layout.viewparser;
 
 import com.example.libapt.layout.LayoutBindingMgr;
 import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.MethodSpec;
 
 import javax.annotation.processing.Messager;
 
@@ -18,7 +17,7 @@ public class ViewParser implements IViewParser {
     }
 
     @Override
-    public void setLayoutAttr(MethodSpec.Builder methodSpecBuilder, String lpVarName, String attrName, String attrValue, Messager messager) {
+    public void setLayoutAttr(LayoutBindingMgr.LayoutParseContext parseContext, String lpVarName, String attrName, String attrValue, Messager messager) {
 
     }
 
@@ -26,6 +25,7 @@ public class ViewParser implements IViewParser {
     public void setAttr(LayoutBindingMgr.LayoutParseContext parseContext, String viewVarName, String attrName, String attrValue, Messager messager) {
         switch (attrName) {
             case "android:id":
+                parseContext.methodSpecBuilder.addStatement("$N.setId($T.id.$L)", viewVarName, parseContext.R_CLASS, attrValue.substring(5));
                 break;
         }
 
@@ -42,6 +42,11 @@ public class ViewParser implements IViewParser {
         }
         return result;
     }
+
+    // TypedValue.applyDimension
+//    protected SizeResult parseSize(String attrValue) {
+//
+//    }
 
     protected class TextResult {
         boolean isR;

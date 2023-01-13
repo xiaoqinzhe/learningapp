@@ -34,9 +34,25 @@ public class LayoutBindingConfig {
             if (word.length() == 0) {
                 continue;
             }
-            sb.append(word.substring(0, 1).toUpperCase()).append(word.substring(1, word.length()));
+            sb.append(word.substring(0, 1).toUpperCase()).append(word.substring(1));
         }
         sb.append(LAYOUT_NAME_SUFFIX);
+        return sb.toString();
+    }
+
+    public static String getViewName(String id) {
+        StringBuilder sb = new StringBuilder();
+        int i = 0;
+        for (String word : id.split("_")) {
+            if (word.length() == 0) {
+                continue;
+            }
+            if (i++ == 0) {
+                sb.append(word);
+            } else {
+                sb.append(word.substring(0, 1).toUpperCase()).append(word.substring(1));
+            }
+        }
         return sb.toString();
     }
 
