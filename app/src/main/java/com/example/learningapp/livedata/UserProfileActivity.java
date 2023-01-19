@@ -15,7 +15,6 @@ import android.widget.TextView;
 import com.example.learningapp.HHHHH;
 import com.example.learningapp.AppApplication;
 import com.example.learningapp.R;
-import com.example.learningapp.data.database.AppDatabase;
 import com.example.learningapp.data.objects.User;
 import com.example.learningapp.data.viewmodels.UserProfileViewModel;
 

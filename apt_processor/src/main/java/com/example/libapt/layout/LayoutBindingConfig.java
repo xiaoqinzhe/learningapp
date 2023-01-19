@@ -17,7 +17,9 @@ public class LayoutBindingConfig {
     public static final String LAYOUT_NAME_SUFFIX = "LayoutBinding";
 
     public static final ClassName CONTEXT = ClassName.get("android.content", "Context");
+    public static final ClassName LAYOUT_INFLATER = ClassName.get("android.view", "LayoutInflater");
     public static final ClassName VIEW = ClassName.get("android.view", "View");
+    public static final ClassName VIEW_GROUP = ClassName.get("android.view", "ViewGroup");
 
     private static final Map<String, IViewParser> viewParserMap = new HashMap<>();
 

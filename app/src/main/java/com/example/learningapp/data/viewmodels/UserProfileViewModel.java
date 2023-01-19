@@ -7,7 +7,6 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 
-import com.example.learningapp.data.database.AppDatabase;
 import com.example.learningapp.data.net.RetrofitService;
 import com.example.learningapp.data.objects.User;
 import com.example.learningapp.data.repository.UserRepository;

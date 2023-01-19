@@ -4,6 +4,7 @@ ext {
 
     apt_annotation = project(':apt_annotation')
     apt_processor = project(':apt_processor')
+    apt_api = project(":apt_api")
 
     javapoet = "com.squareup:javapoet:1.13.0"
 

@@ -5,12 +5,10 @@ import android.app.Application;
 import androidx.emoji.bundled.BundledEmojiCompatConfig;
 import androidx.emoji.text.EmojiCompat;
 
-import com.example.learningapp.data.database.AppDatabase;
 import com.example.learningapp.views.emoji.EmojiTransferManager;
 
 public class AppApplication extends Application {
 
-    public static AppDatabase appDatabase;
     private static AppApplication mApp;
 
     @Override
@@ -41,10 +39,6 @@ public class AppApplication extends Application {
         // Emoji
         EmojiTransferManager.init(this);
 
-    }
-
-    public AppDatabase getAppDatabase() {
-        return appDatabase;
     }
 
     public static AppApplication getApp() {

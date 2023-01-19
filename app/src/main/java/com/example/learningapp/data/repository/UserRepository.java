@@ -10,9 +10,6 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
 
-import com.example.learningapp.AppApplication;
-import com.example.learningapp.data.dao.UserDao;
-import com.example.learningapp.data.database.AppDatabase;
 import com.example.learningapp.data.objects.User;
 import com.example.learningapp.data.services.UserWebService;
 import com.example.learningapp.utils.MyThreadPool;
@@ -22,13 +19,11 @@ import java.util.TimerTask;
 
 public class UserRepository {
     private UserWebService userWebService;
-    private UserDao userDao;
     private MutableLiveData<User> userCache;   // TODO
 
     public UserRepository(){
         // TODO 依赖注入  (/服务定位器)
         userWebService = new UserWebService();
-        userDao = AppApplication.appDatabase.userDao();
         userCache = new MutableLiveData<>();
         Log.i("UserRepository", "Constructor");
     }
@@ -38,23 +33,7 @@ public class UserRepository {
             return userCache;
         // background: remote + local
         final String uid = userId;
-        new AsyncTask<String, Integer, User>(){
 
-            @Override
-            protected User doInBackground(String... strings) {
-                User u = userDao.getUserById(uid);
-                if(u == null){
-                    u = userWebService.getUserById(uid);
-                    userDao.updateUser(u);
-                }
-                return u;
-            }
-
-            @Override
-            protected void onPostExecute(User user) {
-                userCache.setValue(user);
-            }
-        }.execute();
 
 //        final Handler handler = new Handler() {
 //            @Override
@@ -105,11 +84,6 @@ public class UserRepository {
             @Override
             public void run() {
                 User user = userWebService.getUserById(uid);
-                User local_u = userDao.getUserById(uid);
-                if(local_u == null)
-                    userDao.insertUser(user);
-                else
-                    userDao.updateUser(user);
                 Message msg = Message.obtain();
                 msg.what = 233;
                 Bundle data = new Bundle();

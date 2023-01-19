@@ -23,6 +23,7 @@ import android.widget.Button;
 
 import com.example.learningapp.aidl.AidlActivity;
 import com.example.learningapp.apt.AptTestActivity;
+import com.example.learningapp.apt.AptTestJavaActivity;
 import com.example.learningapp.apt.ButterKnifeTestActivity;
 import com.example.learningapp.backworker.AsyncActivity;
 import com.example.learningapp.backworker.WorkerActivity;
@@ -284,7 +285,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startAptTest(View view) {
-        Intent intent = new Intent(this, AptTestActivity.class);
+        Intent intent = new Intent(this, AptTestJavaActivity.class);
         startActivity(intent);
     }
 

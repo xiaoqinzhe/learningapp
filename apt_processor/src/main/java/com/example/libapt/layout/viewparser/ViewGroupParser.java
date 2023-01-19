@@ -24,7 +24,7 @@ public class ViewGroupParser extends ViewParser {
                 } else if (attrValue.equals("wrap_content")) {
                     parseContext.methodSpecBuilder.addStatement(format + "$T.$L", lpVarName, getLPClassName(), "WRAP_CONTENT");
                 }
-                break;
+                return;
             case "android:layout_marginTop":
             case "android:layout_marginStart":
             case "android:layout_marginEnd":
@@ -67,8 +67,10 @@ public class ViewGroupParser extends ViewParser {
                         );
                     }
                 }
-                break;
+                return;
         }
+
+        messager.printMessage(Diagnostic.Kind.WARNING, "attr is not supported: " + attrName);
     }
 
 }

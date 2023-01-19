@@ -23,11 +23,6 @@ android {
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        javaCompileOptions {
-            annotationProcessorOptions {
-                arguments = ["room.schemaLocation" : "$projectDir/schemaLocation".toString()]
-            }
-        }
     }
     buildTypes {
         release {
@@ -51,7 +46,8 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation ndktool
-    implementation apt_annotation
+
+    implementation apt_api
     kapt apt_processor
 
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
@@ -84,16 +80,6 @@ dependencies {
 
     // Testing Navigation
     androidTestImplementation "androidx.navigation:navigation-testing:$nav_version"
-}
-
-// room
-dependencies {
-    def room_version = "2.1.0"
-    // add for room
-    implementation "android.arch.persistence.room:runtime:$room_version"
-    // room 配合 RxJava
-    implementation "android.arch.persistence.room:rxjava2:$room_version"
-    kapt "android.arch.persistence.room:compiler:$room_version"
 }
 
 dependencies {

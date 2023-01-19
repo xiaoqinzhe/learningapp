@@ -3,26 +3,11 @@ package com.example.learningapp.data.objects;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import androidx.room.ColumnInfo;
-import androidx.room.Entity;
-import androidx.room.Ignore;
-import androidx.room.Index;
-import androidx.room.PrimaryKey;
-
-import org.jetbrains.annotations.NotNull;
-
-@Entity(tableName = "users", indices = {@Index(value = "user_name", unique = true)})
 public class User implements Parcelable {
-    @PrimaryKey
-    @NotNull
-    @ColumnInfo(name = "id")
     public String userId;
-    @ColumnInfo(name = "user_name")
     public String userName;
-    @ColumnInfo(name = "user_sign")
     public String userSign;
 
-    @Ignore
     private String ignore;
     // @Embedded  // 嵌套？
 

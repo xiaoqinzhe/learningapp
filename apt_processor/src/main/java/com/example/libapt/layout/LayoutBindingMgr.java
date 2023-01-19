@@ -76,6 +76,8 @@ public class LayoutBindingMgr {
                 DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
                 Document document = documentBuilder.parse(path);
                 org.w3c.dom.Element documentElement = document.getDocumentElement();
+
+                // method createView
                 MethodSpec.Builder methodSpecBuilder = MethodSpec.methodBuilder("createView")
                         .addModifiers(Modifier.PUBLIC)
                         .returns(LayoutBindingConfig.VIEW)
@@ -83,13 +85,19 @@ public class LayoutBindingMgr {
                 LayoutParseContext parseContext = new LayoutParseContext(typeSpecBuilder, methodSpecBuilder);
                 transversalNode(documentElement, parseContext, null);
                 typeSpecBuilder.addMethod(methodSpecBuilder.build());
+
+                // method inflate
+                buildInflateMethod(typeSpecBuilder);
+
             } catch (ParserConfigurationException | SAXException | IOException e) {
                 err(e.getMessage());
             }
 
             // 3. write file
             TypeSpec typeSpec = typeSpecBuilder.build();
-            JavaFile javaFile = JavaFile.builder(LayoutBindingConfig.GENERATED_PACKAGE_NAME, typeSpec).build();
+            JavaFile javaFile = JavaFile.builder(LayoutBindingConfig.GENERATED_PACKAGE_NAME, typeSpec)
+                    .indent("    ")
+                    .build();
             try {
                 javaFile.writeTo(filer);
             } catch (IOException e) {
@@ -97,6 +105,29 @@ public class LayoutBindingMgr {
             }
         }
 
+    }
+
+    private void buildInflateMethod(TypeSpec.Builder typeSpecBuilder) {
+        /**
+         * public static View inflate(LayoutInflater inflater, int layoutId, ViewGroup parent, boolean attach) {
+         *         return createView(inflater, layoutId, parent, attach);
+         *     }
+         */
+        MethodSpec.Builder methodSpecBuilder = MethodSpec.methodBuilder("inflate")
+                .addModifiers(Modifier.PUBLIC)
+                .returns(LayoutBindingConfig.VIEW)
+                .addParameter(LayoutBindingConfig.LAYOUT_INFLATER, "inflater")
+                .addParameter(ClassName.INT, "layoutId")
+                .addParameter(LayoutBindingConfig.VIEW_GROUP, "root")
+                .addParameter(ClassName.BOOLEAN, "attachToRoot")
+                .addStatement("View view = createView(inflater.getContext())") // todo parent
+                .beginControlFlow("if (root != null)")
+                .beginControlFlow("if (attachToRoot)")
+                .addStatement("root.addView(view)")
+                .endControlFlow()
+                .endControlFlow()
+                .addStatement("return view");
+        typeSpecBuilder.addMethod(methodSpecBuilder.build());
     }
 
     private void transversalNode(Node node, LayoutParseContext parseContext, NodeParseInfo parentInfo) {
@@ -128,6 +159,11 @@ public class LayoutBindingMgr {
          * view.setAttr
          * lp = new LayoutParams(); view.setLP(lp)
          * parent.addView(view)
+         *
+         * style -> find file: 1. android/sdk/res  2. app/src/main/res
+         * custom view -> get supper class, parse, set custom method by invoking method initAttr() if find
+         * merge/include -> get xml, transversal
+         *
          */
         String nodeName = node.getNodeName();
         IViewParser viewParser = LayoutBindingConfig.getViewParser(nodeName);
@@ -192,6 +228,8 @@ public class LayoutBindingMgr {
         if (parentInfo != null) {
             parseContext.methodSpecBuilder.addStatement("$L.addView($L)", parentInfo.viewVarName, viewVarName);
         }
+
+        parseContext.methodSpecBuilder.addCode("\n");
 
         return new NodeParseInfo(viewVarName, viewParser, viewClass);
     }

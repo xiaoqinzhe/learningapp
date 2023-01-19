@@ -1,0 +1,160 @@
+package com.example.buildsrc.layoutbinding;
+
+import com.android.build.api.transform.DirectoryInput;
+import com.android.build.api.transform.Format;
+import com.android.build.api.transform.JarInput;
+import com.android.build.api.transform.QualifiedContent;
+import com.android.build.api.transform.Transform;
+import com.android.build.api.transform.TransformException;
+import com.android.build.api.transform.TransformInput;
+import com.android.build.api.transform.TransformInvocation;
+import com.android.build.api.transform.TransformOutputProvider;
+import com.android.build.gradle.BaseExtension;
+import com.android.build.gradle.internal.pipeline.TransformManager;
+import com.android.utils.FileUtils;
+
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Collection;
+import java.util.Set;
+
+import javassist.CannotCompileException;
+import javassist.CtClass;
+
+public class LayoutBindingTransform extends Transform {
+
+    private LayoutBindingClassPool mClassPool;
+    private final BaseExtension mExtension;
+    private boolean mIsIncremental;
+    private InflateConverter mInflateConverter;
+
+    public LayoutBindingTransform(BaseExtension extension) {
+        mExtension = extension;
+    }
+
+    private static final String TAG = "LayoutBindingTransform";
+
+    @Override
+    public String getName() {
+        return "LayoutBindingTransform";
+    }
+
+    @Override
+    public Set<QualifiedContent.ContentType> getInputTypes() {
+        return TransformManager.CONTENT_CLASS;
+    }
+
+    @Override
+    public Set<? super QualifiedContent.Scope> getScopes() {
+        return TransformManager.SCOPE_FULL_PROJECT;
+    }
+
+    @Override
+    public boolean isIncremental() {
+        return true;
+    }
+
+    @Override
+    public void transform(TransformInvocation transformInvocation) throws TransformException, InterruptedException, IOException {
+        super.transform(transformInvocation);
+        d("start transform...");
+
+        mClassPool = new LayoutBindingClassPool(mExtension);
+
+        appendClassPath(transformInvocation.getInputs());
+        appendClassPath(transformInvocation.getReferencedInputs());
+
+        mInflateConverter = new InflateConverter(mClassPool);
+
+        mIsIncremental = transformInvocation.isIncremental();
+
+        Collection<TransformInput> inputs = transformInvocation.getInputs();
+        TransformOutputProvider outputProvider = transformInvocation.getOutputProvider();
+        for (TransformInput input : inputs) {
+            for (DirectoryInput dir : input.getDirectoryInputs()) {
+                convertDir(dir, outputProvider);
+            }
+            for (JarInput jar : input.getJarInputs()) {
+                convertJar(jar, outputProvider);
+            }
+        }
+    }
+
+    private void convertDir(DirectoryInput input, TransformOutputProvider outputProvider) throws IOException {
+        File outDir = outputProvider.getContentLocation(input.getName(), input.getContentTypes(), input.getScopes(), Format.DIRECTORY);
+        d("convertDir dir=" + input.getFile().getPath() + ", outDir=" + outDir.getPath());
+        for (File file : FileUtils.getAllFiles(input.getFile())) {
+//            d("convertDir file = " + file.getPath());
+            File outputFile = getOutputFile(outputProvider, input, file);
+            outputFile.getCanonicalFile().getParentFile().mkdirs();
+
+            if (file.getName().endsWith(".class")) {
+                InputStream inputStream = new FileInputStream(file);
+                OutputStream outputStream = new FileOutputStream(outputFile);
+                convertClassFile(inputStream, outputStream);
+            } else {
+                FileUtils.copyFile(file, outputFile);
+            }
+        }
+    }
+
+    private void convertJar(JarInput input, TransformOutputProvider outputProvider) throws IOException {
+        File outFile = outputProvider.getContentLocation(input.getName(), input.getContentTypes(), input.getScopes(), Format.JAR);
+        d("convertJar " + input.getFile().getPath() + ", outFile=" + outFile.getPath());
+        // todo
+        FileUtils.copyFile(input.getFile(), outFile);
+    }
+
+    private void convertClassFile(InputStream inputStream, OutputStream outputStream) throws IOException {
+        CtClass ctClass = mClassPool.makeClassIfNew(inputStream);
+
+        if (ctClass.hasAnnotation("com.example.libannotation.BindLayouts")) {
+            d("convertClassFile match BindLayouts, file=" + ctClass.getName());
+            if (ctClass.isFrozen()) {
+                ctClass.defrost();
+            }
+            try {
+                ctClass.instrument(mInflateConverter);
+                ctClass.toBytecode(new DataOutputStream(outputStream));
+                ctClass.detach();
+            } catch (CannotCompileException e) {
+                throw new RuntimeException(e.getMessage());
+            }
+            return;
+        }
+
+        try {
+            ctClass.toBytecode(new DataOutputStream(outputStream));
+        } catch (CannotCompileException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    private File getOutputFile(TransformOutputProvider transformOutputProvider, QualifiedContent input, File file) {
+        Format format = input instanceof JarInput ? Format.JAR : Format.DIRECTORY;
+        File locationFile = transformOutputProvider.getContentLocation(input.getName(), input.getContentTypes(), input.getScopes(), format);
+        String path = input.getFile().toURI().relativize(file.toURI()).getPath();
+        return new File(locationFile, path);
+    }
+
+    private void appendClassPath(Collection<TransformInput> inputs) {
+        for (TransformInput transformInput : inputs) {
+            for (DirectoryInput dirInput : transformInput.getDirectoryInputs()) {
+                mClassPool.appendClassPath(dirInput.getFile().getAbsolutePath());
+            }
+
+            for (JarInput jarInput : transformInput.getJarInputs()) {
+                mClassPool.appendClassPath(jarInput.getFile().getAbsolutePath());
+            }
+        }
+    }
+
+    private void d(String msg) {
+        System.out.println("[LayoutBindingTransform]: " + msg);
+    }
+}

@@ -4,6 +4,7 @@ import com.example.libapt.layout.LayoutBindingMgr;
 import com.squareup.javapoet.ClassName;
 
 import javax.annotation.processing.Messager;
+import javax.tools.Diagnostic;
 
 public class ViewParser implements IViewParser {
     @Override
@@ -26,9 +27,9 @@ public class ViewParser implements IViewParser {
         switch (attrName) {
             case "android:id":
                 parseContext.methodSpecBuilder.addStatement("$N.setId($T.id.$L)", viewVarName, parseContext.R_CLASS, attrValue.substring(5));
-                break;
+                return;
         }
-
+        messager.printMessage(Diagnostic.Kind.WARNING, "attr is not supported: " + attrName);
     }
 
     protected TextResult parseText(String attrValue) {
