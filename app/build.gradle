@@ -15,6 +15,9 @@ android {
     dataBinding {
         enabled = true
     }
+    viewBinding {
+        enabled = true
+    }
     defaultConfig {
         applicationId "com.example.learningapp"
         minSdkVersion VERSION_MIN_SDK

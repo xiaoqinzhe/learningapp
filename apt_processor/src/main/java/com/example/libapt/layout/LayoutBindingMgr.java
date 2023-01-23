@@ -70,6 +70,7 @@ public class LayoutBindingMgr {
             // 2. parse xml
             note("parse xml...");
             String layoutClassName = LayoutBindingConfig.getLayoutClassName(layoutName);
+            ClassName layoutClz = ClassName.get(LayoutBindingConfig.GENERATED_PACKAGE_NAME, layoutClassName);
             TypeSpec.Builder typeSpecBuilder = TypeSpec.classBuilder(layoutClassName)
                     .addModifiers(Modifier.PUBLIC);
             try {
@@ -78,16 +79,29 @@ public class LayoutBindingMgr {
                 org.w3c.dom.Element documentElement = document.getDocumentElement();
 
                 // method createView
-                MethodSpec.Builder methodSpecBuilder = MethodSpec.methodBuilder("createView")
-                        .addModifiers(Modifier.PUBLIC)
-                        .returns(LayoutBindingConfig.VIEW)
+                MethodSpec.Builder methodSpecBuilder = MethodSpec.methodBuilder("createBinding")
+                        .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                        .returns(layoutClz)
                         .addParameter(LayoutBindingConfig.CONTEXT, "context");
+
+                // new layoutClz()
+                methodSpecBuilder.addStatement("$T binding = new $T()", layoutClz, layoutClz);
+
                 LayoutParseContext parseContext = new LayoutParseContext(typeSpecBuilder, methodSpecBuilder);
+                parseContext.bindClsName = "binding";
                 transversalNode(documentElement, parseContext, null);
                 typeSpecBuilder.addMethod(methodSpecBuilder.build());
 
+                // method createView
+                MethodSpec.Builder createViewMethod = MethodSpec.methodBuilder("createView")
+                        .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                        .returns(LayoutBindingConfig.VIEW)
+                        .addParameter(LayoutBindingConfig.CONTEXT, "context")
+                        .addStatement("return createBinding(context).rootView");
+                typeSpecBuilder.addMethod(createViewMethod.build());
+
                 // method inflate
-                buildInflateMethod(typeSpecBuilder);
+                buildInflateMethod(typeSpecBuilder, layoutClassName, layoutClz);
 
             } catch (ParserConfigurationException | SAXException | IOException e) {
                 err(e.getMessage());
@@ -107,26 +121,36 @@ public class LayoutBindingMgr {
 
     }
 
-    private void buildInflateMethod(TypeSpec.Builder typeSpecBuilder) {
+    private void buildInflateMethod(TypeSpec.Builder typeSpecBuilder, String layoutClassName, ClassName layoutClz) {
         /**
          * public static View inflate(LayoutInflater inflater, int layoutId, ViewGroup parent, boolean attach) {
          *         return createView(inflater, layoutId, parent, attach);
          *     }
          */
         MethodSpec.Builder methodSpecBuilder = MethodSpec.methodBuilder("inflate")
-                .addModifiers(Modifier.PUBLIC)
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .returns(layoutClz)
+                .addParameter(LayoutBindingConfig.LAYOUT_INFLATER, "inflater")
+                .addParameter(ClassName.INT, "layoutId")
+                .addParameter(LayoutBindingConfig.VIEW_GROUP, "root")
+                .addParameter(ClassName.BOOLEAN, "attachToRoot")
+                .addStatement(layoutClassName + " binding = createBinding(inflater.getContext())") // todo add parent
+                .beginControlFlow("if (root != null)")
+                .beginControlFlow("if (attachToRoot)")
+                .addStatement("root.addView(binding.rootView)")
+                .endControlFlow()
+                .endControlFlow()
+                .addStatement("return binding");
+        typeSpecBuilder.addMethod(methodSpecBuilder.build());
+
+        methodSpecBuilder = MethodSpec.methodBuilder("inflateView")
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .returns(LayoutBindingConfig.VIEW)
                 .addParameter(LayoutBindingConfig.LAYOUT_INFLATER, "inflater")
                 .addParameter(ClassName.INT, "layoutId")
                 .addParameter(LayoutBindingConfig.VIEW_GROUP, "root")
                 .addParameter(ClassName.BOOLEAN, "attachToRoot")
-                .addStatement("View view = createView(inflater.getContext())") // todo parent
-                .beginControlFlow("if (root != null)")
-                .beginControlFlow("if (attachToRoot)")
-                .addStatement("root.addView(view)")
-                .endControlFlow()
-                .endControlFlow()
-                .addStatement("return view");
+                .addStatement("return inflate(inflater, layoutId, root, attachToRoot).rootView");
         typeSpecBuilder.addMethod(methodSpecBuilder.build());
     }
 
@@ -146,7 +170,7 @@ public class LayoutBindingMgr {
         }
 
         if (parentInfo == null) {
-            parseContext.methodSpecBuilder.addStatement("return $L", nodeParseInfo.viewVarName);
+            parseContext.methodSpecBuilder.addStatement("return $L", parseContext.bindClsName);
         }
     }
 
@@ -182,7 +206,7 @@ public class LayoutBindingMgr {
 
         if (parentInfo == null) {
             parseContext.typeSpecBuilder.addField(viewClass, "rootView", Modifier.PUBLIC);
-            parseContext.methodSpecBuilder.addStatement("rootView=" + viewVarName);
+            parseContext.methodSpecBuilder.addStatement(parseContext.bindClsName + "." + "rootView=" + viewVarName);
         }
 
         String lpVarName = "lp" + parseContext.viewNameIndex++;
@@ -218,7 +242,7 @@ public class LayoutBindingMgr {
                     String viewId = attrValue.substring(5);
                     String viewFieldName = LayoutBindingConfig.getViewName(viewId);
                     parseContext.typeSpecBuilder.addField(viewClass, viewFieldName, Modifier.PUBLIC);
-                    parseContext.methodSpecBuilder.addStatement(viewFieldName + " = " + viewVarName);
+                    parseContext.methodSpecBuilder.addStatement(parseContext.bindClsName + "." + viewFieldName + " = " + viewVarName);
                 }
                 viewParser.setAttr(parseContext, viewVarName, attrName, attrValue, messager);
             }
@@ -269,6 +293,7 @@ public class LayoutBindingMgr {
     public static class LayoutParseContext {
         public TypeSpec.Builder typeSpecBuilder;
         public MethodSpec.Builder methodSpecBuilder;
+        public String bindClsName;
         // todo pkg search
         public ClassName R_CLASS = ClassName.get("com.example.learningapp", "R");
         int viewNameIndex;

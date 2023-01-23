@@ -25,6 +25,7 @@ import java.util.Set;
 
 import javassist.CannotCompileException;
 import javassist.CtClass;
+import javassist.NotFoundException;
 
 public class LayoutBindingTransform extends Transform {
 
@@ -113,18 +114,11 @@ public class LayoutBindingTransform extends Transform {
     private void convertClassFile(InputStream inputStream, OutputStream outputStream) throws IOException {
         CtClass ctClass = mClassPool.makeClassIfNew(inputStream);
 
-        if (ctClass.hasAnnotation("com.example.libannotation.BindLayouts")) {
-            d("convertClassFile match BindLayouts, file=" + ctClass.getName());
-            if (ctClass.isFrozen()) {
-                ctClass.defrost();
-            }
-            try {
-                ctClass.instrument(mInflateConverter);
-                ctClass.toBytecode(new DataOutputStream(outputStream));
-                ctClass.detach();
-            } catch (CannotCompileException e) {
-                throw new RuntimeException(e.getMessage());
-            }
+        if (handleBindLayout(ctClass, outputStream)) {
+            return;
+        }
+
+        if (handleViewBinding(ctClass, outputStream)) {
             return;
         }
 
@@ -133,6 +127,42 @@ public class LayoutBindingTransform extends Transform {
         } catch (CannotCompileException e) {
             throw new RuntimeException(e.getMessage());
         }
+    }
+
+    private boolean handleBindLayout(CtClass ctClass, OutputStream outputStream) {
+        if (ctClass.hasAnnotation("com.example.libannotation.BindLayouts")) {
+            d("handleBindLayout match BindLayouts, file=" + ctClass.getName());
+            if (ctClass.isFrozen()) {
+                ctClass.defrost();
+            }
+            try {
+                ctClass.instrument(mInflateConverter);
+                ctClass.toBytecode(new DataOutputStream(outputStream));
+                ctClass.detach();
+            } catch (CannotCompileException | IOException e) {
+                throw new RuntimeException(e.getMessage());
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private boolean handleViewBinding(CtClass ctClass, OutputStream outputStream) {
+        if (ViewBindingConverter.needChangedViewBinding(ctClass, mClassPool)) {
+            d("handleViewBinding match ViewBinding, file=" + ctClass.getName());
+            if (ctClass.isFrozen()) {
+                ctClass.defrost();
+            }
+            try {
+                ViewBindingConverter.convert(ctClass, mClassPool);
+                ctClass.toBytecode(new DataOutputStream(outputStream));
+                ctClass.detach();
+            } catch (CannotCompileException | IOException | NotFoundException e) {
+                throw new RuntimeException(e.getMessage());
+            }
+            return true;
+        }
+        return false;
     }
 
     private File getOutputFile(TransformOutputProvider transformOutputProvider, QualifiedContent input, File file) {
