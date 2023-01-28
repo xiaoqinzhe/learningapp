@@ -1,4 +1,5 @@
 import com.example.buildsrc.TransformRegPlugin
+import com.example.plugin_module.ModuleTestPlugin
 
 
 apply plugin: 'com.android.application'
@@ -8,6 +9,7 @@ apply plugin: 'kotlin-kapt'
 
 apply plugin: TestPlugin
 apply plugin: TransformRegPlugin
+apply plugin: ModuleTestPlugin
 
 android {
     compileSdkVersion VERSION_COMPILE_SDK

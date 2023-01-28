@@ -1,5 +1,7 @@
 package com.example.buildsrc.layoutbinding;
 
+import static com.google.protobuf.CodedOutputStream.DEFAULT_BUFFER_SIZE;
+
 import com.android.build.api.transform.DirectoryInput;
 import com.android.build.api.transform.Format;
 import com.android.build.api.transform.JarInput;
@@ -11,6 +13,7 @@ import com.android.build.api.transform.TransformInvocation;
 import com.android.build.api.transform.TransformOutputProvider;
 import com.android.build.gradle.BaseExtension;
 import com.android.build.gradle.internal.pipeline.TransformManager;
+import com.android.tools.r8.v.b.Z;
 import com.android.utils.FileUtils;
 
 import java.io.DataOutputStream;
@@ -21,11 +24,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
 import javassist.CannotCompileException;
 import javassist.CtClass;
 import javassist.NotFoundException;
+import kotlin.io.ByteStreamsKt;
 
 public class LayoutBindingTransform extends Transform {
 
@@ -98,6 +106,8 @@ public class LayoutBindingTransform extends Transform {
                 InputStream inputStream = new FileInputStream(file);
                 OutputStream outputStream = new FileOutputStream(outputFile);
                 convertClassFile(inputStream, outputStream);
+                inputStream.close();
+                outputStream.close();
             } else {
                 FileUtils.copyFile(file, outputFile);
             }
@@ -107,8 +117,24 @@ public class LayoutBindingTransform extends Transform {
     private void convertJar(JarInput input, TransformOutputProvider outputProvider) throws IOException {
         File outFile = outputProvider.getContentLocation(input.getName(), input.getContentTypes(), input.getScopes(), Format.JAR);
         d("convertJar " + input.getFile().getPath() + ", outFile=" + outFile.getPath());
-        // todo
-        FileUtils.copyFile(input.getFile(), outFile);
+
+        outFile.getCanonicalFile().getParentFile().mkdirs();
+        ZipFile zipFile = new ZipFile(input.getFile());
+        ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(outFile));
+        Enumeration<? extends ZipEntry> enumeration = zipFile.entries();
+        while (enumeration.hasMoreElements()) {
+            ZipEntry zipEntry = enumeration.nextElement();
+            String entryName = zipEntry.getName();
+            InputStream inputStream = zipFile.getInputStream(zipEntry);
+            zipOutputStream.putNextEntry(new ZipEntry(entryName));
+            if (!zipEntry.isDirectory() && entryName.endsWith(".class")) {
+                convertClassFile(inputStream, zipOutputStream);
+            } else {
+                ByteStreamsKt.copyTo(inputStream, zipOutputStream, DEFAULT_BUFFER_SIZE);
+            }
+            inputStream.close();
+        }
+        zipOutputStream.close();
     }
 
     private void convertClassFile(InputStream inputStream, OutputStream outputStream) throws IOException {

@@ -12,6 +12,7 @@ buildscript {
     dependencies {
         classpath "com.android.tools.build:gradle:$android_plugin_version"
         classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.21'
+        classpath project(":plugin_module")
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
@@ -38,6 +39,8 @@ task mytask {
     println "mytask configuration" // 配置阶段
     afterEvaluate { // task依赖图完成
         println "mytask afterEvaluate graph completed"
+        println "project.projectDir=" + project.projectDir
+        println "project.dependencies=" + project.configurations
     }
     doFirst { // 执行阶段
         println "mytask doFirst"

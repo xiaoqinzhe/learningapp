@@ -16,6 +16,8 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
@@ -31,12 +33,15 @@ import javax.xml.parsers.ParserConfigurationException;
 
 public class LayoutBindingMgr {
 
+    private static List<String> modulePaths = new ArrayList<>();
+
     private Elements elementUtils;
     private Types typeUtils;
     private Filer filer; // 文件生成
     private Messager messager; // 日志
 
     private String modulePath;
+    private String valueFilePath;
 
     private DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 
@@ -266,7 +271,12 @@ public class LayoutBindingMgr {
             int index = path.indexOf("build/generated/");
             if (index < 0) return;
             modulePath = path.substring(0, index);
-            note("modulePath=" + modulePath);
+            modulePaths.add(modulePath);
+            note("modulePath=" + modulePath + ", path size=" + modulePaths.size());
+
+//            valueFilePath = modulePath + "build/intermediates/incremental/mergeXxxResource/merge.dir/values/values.xml"
+//                    note("path=" + path);
+
             javaFileObject.openWriter().close();
             javaFileObject.delete();
         } catch (IOException e) {

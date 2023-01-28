@@ -1,0 +1,35 @@
+apply plugin: 'maven-publish'
+
+publishing {
+    repositories {
+        maven {
+            // 预发布版本库
+            url = "https://mirrors.tencent.com/repository/maven/thirdparty-snapshots/"
+            // 正式版本
+//            url = "https://mirrors.tencent.com/repository/maven/thirdparty/"
+            credentials {
+                //修改为自己的账号密码，可在mirrors.tencent.com上查询密码
+                username 'qingzqzhang'
+                password '1f5c7e3e634611ea8ab46c92bf3ad140'
+            }
+        }
+    }
+
+    publications {
+        amobileqq(MavenPublication) {
+            groupId "com.tx.x2j"
+            artifactId "x2j-plugin"
+            version "0.0.7"
+            artifact("build/libs/x2j-plugin.jar")     //托管指定路径的包
+            pom.withXml {
+                //properties信息必填，否则合入主干MR不通过
+                def propertiesNode = asNode().appendNode('properties')
+                propertiesNode.appendNode('artifactName', 'x2j-pluginName')
+                propertiesNode.appendNode('artifactDesc', 'x2j-pluginDesc')
+                propertiesNode.appendNode('sourceUrl', 'https://git.woa.com/qingzqzhang/xml2java.git')
+                propertiesNode.appendNode('deployUrl', 'https://git.woa.com/qingzqzhang/xml2java.git')
+                propertiesNode.appendNode('commitId', '3c957e5a')
+            }
+        }
+    }
+}
