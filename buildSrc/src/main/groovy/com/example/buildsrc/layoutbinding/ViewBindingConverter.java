@@ -71,6 +71,7 @@ public class ViewBindingConverter {
             }
         }
         sb.append(");}");
+        System.out.println(sb.toString());
         inflateMethod.setBody(sb.toString());
     }
 

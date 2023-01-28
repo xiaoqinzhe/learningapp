@@ -59,7 +59,28 @@ public class LayoutBindingConfig {
     }
 
     public static IViewParser getViewParser(String name) {
-        return viewParserMap.get(name);
+        IViewParser viewParser = viewParserMap.get(name);
+        if (viewParser != null) {
+            return viewParser;
+        }
+        if (name.contains(".")) {
+            // custom view
+            // find super: ele,  class 不行
+            try {
+                Class<?> clz = LayoutBindingConfig.class.getClassLoader().loadClass(name);
+                Class<?> superClz = clz.getSuperclass();
+                while (superClz != null) {
+                    viewParser = viewParserMap.get(superClz.getSimpleName());
+                    if (viewParser != null) {
+                        return viewParser;
+                    }
+                    superClz = clz.getSuperclass();
+                }
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
     }
 
 }

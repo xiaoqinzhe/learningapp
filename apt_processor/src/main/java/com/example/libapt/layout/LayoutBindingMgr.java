@@ -198,6 +198,7 @@ public class LayoutBindingMgr {
         IViewParser viewParser = LayoutBindingConfig.getViewParser(nodeName);
         if (viewParser == null) {
             note("viewParser is null. node=" + nodeName);
+            // err
             return null;
         }
         String viewVarName = "view" + parseContext.viewNameIndex;

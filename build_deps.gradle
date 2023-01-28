@@ -12,6 +12,7 @@ ext {
     auto_service = 'com.google.auto.service:auto-service:1.0'
     auto_service_common = 'com.google.auto:auto-common:1.0'
 
+    plugin_module = project(":plugin_module")
 
 }
 
