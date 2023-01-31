@@ -18,7 +18,7 @@ class LayoutBindingClassPool extends ClassPool {
     }
 
     ClassPath appendClassPath(String pathname) {
-        System.out.println("appendClassPath pathname=" + pathname);
+        // System.out.println("appendClassPath pathname=" + pathname);
         try {
             return super.appendClassPath(pathname);
         } catch (NotFoundException e) {

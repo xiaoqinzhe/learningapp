@@ -15,6 +15,8 @@ import com.example.learningapp.R
  */
 class ButterKnifeTestActivity : AppCompatActivity() {
 
+
+
     @BindView(R.id.title)
     lateinit var titleView: TextView
 

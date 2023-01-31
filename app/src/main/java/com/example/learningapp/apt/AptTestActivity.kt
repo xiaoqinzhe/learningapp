@@ -30,6 +30,9 @@ class AptTestActivity : AppCompatActivity() {
 
         // 3. auto replace method setContentView or inflate
         setContentView(R.layout.activity_apt_test)
+        if (titleTv != null) {
+            titleTv.setText("sfds")
+        }
 //        setContentView(layoutInflater.inflate(R.layout.activity_apt_test, null))
 
 //        BindViewAptTestActivity.bindViews(this)

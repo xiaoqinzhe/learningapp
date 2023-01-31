@@ -6,6 +6,7 @@ import com.android.build.api.transform.DirectoryInput;
 import com.android.build.api.transform.Format;
 import com.android.build.api.transform.JarInput;
 import com.android.build.api.transform.QualifiedContent;
+import com.android.build.api.transform.Status;
 import com.android.build.api.transform.Transform;
 import com.android.build.api.transform.TransformException;
 import com.android.build.api.transform.TransformInput;
@@ -13,7 +14,6 @@ import com.android.build.api.transform.TransformInvocation;
 import com.android.build.api.transform.TransformOutputProvider;
 import com.android.build.gradle.BaseExtension;
 import com.android.build.gradle.internal.pipeline.TransformManager;
-import com.android.tools.r8.v.b.Z;
 import com.android.utils.FileUtils;
 
 import java.io.DataOutputStream;
@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -81,45 +82,105 @@ public class LayoutBindingTransform extends Transform {
         mInflateConverter = new InflateConverter(mClassPool);
 
         mIsIncremental = transformInvocation.isIncremental();
+        d("isIncremental = " + mIsIncremental);
+
+        TransformOutputProvider outputProvider = transformInvocation.getOutputProvider();
+
+        if (!mIsIncremental) {
+            outputProvider.deleteAll();
+        }
 
         Collection<TransformInput> inputs = transformInvocation.getInputs();
-        TransformOutputProvider outputProvider = transformInvocation.getOutputProvider();
+
         for (TransformInput input : inputs) {
-            for (DirectoryInput dir : input.getDirectoryInputs()) {
-                convertDir(dir, outputProvider);
+            for (DirectoryInput directoryInput : input.getDirectoryInputs()) {
+                File dest = outputProvider.getContentLocation(directoryInput.getName(),
+                        directoryInput.getContentTypes(), directoryInput.getScopes(),
+                        Format.DIRECTORY);
+                System.out.println("dir dir=" + directoryInput.getName() + ", dest=" + dest.getPath());
+                FileUtils.mkdirs(dest);
+                if (mIsIncremental) {
+                    String srcDirPath = directoryInput.getFile().getAbsolutePath();
+                    String destDirPath = dest.getAbsolutePath();
+                    Map<File, Status> fileStatusMap = directoryInput.getChangedFiles();
+                    for (Map.Entry<File, Status> changedFile : fileStatusMap.entrySet()) {
+                        Status status = changedFile.getValue();
+                        File inputFile = changedFile.getKey();
+                        String destFilePath = inputFile.getAbsolutePath().replace(srcDirPath, destDirPath);
+                        File destFile = new File(destFilePath);
+                        switch (status) {
+                            case NOTCHANGED:
+                                break;
+                            case REMOVED:
+                                if(destFile.exists()) {
+                                    FileUtils.delete(destFile);
+                                }
+                                break;
+                            case ADDED:
+                            case CHANGED:
+                                // FileUtils.touch(destFile);
+                                transformSingleFile(inputFile, destFile, srcDirPath);
+                                break;
+                        }
+                    }
+                } else {
+                    transformDir(directoryInput.getFile(), dest);
+                }
             }
             for (JarInput jar : input.getJarInputs()) {
-                convertJar(jar, outputProvider);
+                Status status = jar.getStatus();
+                File outFile = outputProvider.getContentLocation(jar.getName(), jar.getContentTypes(), jar.getScopes(), Format.JAR);
+                // d("transformJar " + jar.getFile().getPath() + ", status=" + status + ", outFile=" + outFile.getPath());
+                if (mIsIncremental) {
+                    switch(status) {
+                        case NOTCHANGED:
+                            continue;
+                        case ADDED:
+                        case CHANGED:
+                            transformJar(jar.getFile(), outFile, status);
+                            break;
+                        case REMOVED:
+                            if (outFile.exists()) {
+                                FileUtils.delete(outFile);
+                            }
+                            break;
+                    }
+                } else {
+                    transformJar(jar.getFile(), outFile, status);
+                }
             }
         }
     }
 
-    private void convertDir(DirectoryInput input, TransformOutputProvider outputProvider) throws IOException {
-        File outDir = outputProvider.getContentLocation(input.getName(), input.getContentTypes(), input.getScopes(), Format.DIRECTORY);
-        d("convertDir dir=" + input.getFile().getPath() + ", outDir=" + outDir.getPath());
-        for (File file : FileUtils.getAllFiles(input.getFile())) {
-//            d("convertDir file = " + file.getPath());
-            File outputFile = getOutputFile(outputProvider, input, file);
-            outputFile.getCanonicalFile().getParentFile().mkdirs();
-
-            if (file.getName().endsWith(".class")) {
-                InputStream inputStream = new FileInputStream(file);
-                OutputStream outputStream = new FileOutputStream(outputFile);
-                convertClassFile(inputStream, outputStream);
-                inputStream.close();
-                outputStream.close();
-            } else {
-                FileUtils.copyFile(file, outputFile);
-            }
+    private void transformDir(File inputDir, File outDir) throws IOException {
+        // d("transformDir file = " + file.getPath());
+        String srcDirPath = inputDir.getAbsolutePath();
+        String destDirPath = outDir.getAbsolutePath();
+        for (File file : FileUtils.getAllFiles(inputDir)) {
+            String destFilePath = file.getAbsolutePath().replace(srcDirPath, destDirPath);
+            File destFile = new File(destFilePath);
+            transformSingleFile(file, destFile, srcDirPath);
         }
     }
 
-    private void convertJar(JarInput input, TransformOutputProvider outputProvider) throws IOException {
-        File outFile = outputProvider.getContentLocation(input.getName(), input.getContentTypes(), input.getScopes(), Format.JAR);
-        d("convertJar " + input.getFile().getPath() + ", outFile=" + outFile.getPath());
+    private void transformSingleFile(File inputFile, File destFile, String srcDirPath) throws IOException {
+        destFile.getCanonicalFile().getParentFile().mkdirs();
 
+        if (inputFile.getName().endsWith(".class")) {
+            InputStream inputStream = new FileInputStream(inputFile);
+            OutputStream outputStream = new FileOutputStream(destFile);
+            convertClassFile(inputStream, outputStream);
+            inputStream.close();
+            outputStream.close();
+        } else {
+            FileUtils.copyFile(inputFile, destFile);
+        }
+    }
+
+
+    private void transformJar(File inputFile, File outFile, Status status) throws IOException {
         outFile.getCanonicalFile().getParentFile().mkdirs();
-        ZipFile zipFile = new ZipFile(input.getFile());
+        ZipFile zipFile = new ZipFile(inputFile);
         ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(outFile));
         Enumeration<? extends ZipEntry> enumeration = zipFile.entries();
         while (enumeration.hasMoreElements()) {
