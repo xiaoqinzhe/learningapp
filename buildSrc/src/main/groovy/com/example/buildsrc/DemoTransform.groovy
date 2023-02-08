@@ -46,6 +46,11 @@ class DemoTransform extends Transform {
         println("DemoTransform start transform...")
 
         incrementalTransform(transformInvocation)
+
+        if (enableParallel) {
+            waitableExecutor.waitForTasksWithQuickFail(true)
+        }
+        println("DemoTransform end transform...")
     }
 
 
@@ -72,7 +77,7 @@ class DemoTransform extends Transform {
                         jarInput.getContentTypes(),
                         jarInput.getScopes(),
                         Format.JAR);
-                System.out.println("jar jar=" + jarInput.getName() + ", dest=" + dest.getPath());
+                // System.out.println("jar jar=" + jarInput.getName() + ", dest=" + dest.getPath());
                 if (isIncremental && !emptyRun) {
                     switch(status) {
                         case NOTCHANGED:
@@ -95,7 +100,7 @@ class DemoTransform extends Transform {
                 File dest = outputProvider.getContentLocation(directoryInput.getName(),
                         directoryInput.getContentTypes(), directoryInput.getScopes(),
                         Format.DIRECTORY);
-                System.out.println("dir dir=" + directoryInput.getName() + ", dest=" + dest.getPath());
+                // System.out.println("dir dir=" + directoryInput.getName() + ", dest=" + dest.getPath());
                 FileUtils.mkdirs(dest);
                 if(isIncremental && !emptyRun) {
                     String srcDirPath = directoryInput.getFile().getAbsolutePath();

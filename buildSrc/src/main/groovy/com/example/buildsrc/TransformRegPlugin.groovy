@@ -12,7 +12,7 @@ class TransformRegPlugin implements Plugin<Project> {
     @Override
     void apply(Project target) {
         println("TransformPlugin apply")
-        target.extensions.getByType(AppExtension).registerTransform(new DemoTransform())
+        //target.extensions.getByType(AppExtension).registerTransform(new DemoTransform())
         addLayoutBindingTransform(target)
     }
 

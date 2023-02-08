@@ -14,6 +14,7 @@ import com.android.build.api.transform.TransformInvocation;
 import com.android.build.api.transform.TransformOutputProvider;
 import com.android.build.gradle.BaseExtension;
 import com.android.build.gradle.internal.pipeline.TransformManager;
+import com.android.ide.common.internal.WaitableExecutor;
 import com.android.utils.FileUtils;
 
 import java.io.DataOutputStream;
@@ -27,6 +28,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -38,9 +40,13 @@ import kotlin.io.ByteStreamsKt;
 
 public class LayoutBindingTransform extends Transform {
 
-    private LayoutBindingClassPool mClassPool;
     private final BaseExtension mExtension;
     private boolean mIsIncremental;
+    boolean enableParallel = true;
+    private WaitableExecutor waitableExecutor = WaitableExecutor.useGlobalSharedThreadPool();
+//    private WaitableExecutor waitableExecutor = WaitableExecutor.useNewFixedSizeThreadPool(8);
+
+    private LayoutBindingClassPool mClassPool;
     private InflateConverter mInflateConverter;
 
     public LayoutBindingTransform(BaseExtension extension) {
@@ -72,7 +78,12 @@ public class LayoutBindingTransform extends Transform {
     @Override
     public void transform(TransformInvocation transformInvocation) throws TransformException, InterruptedException, IOException {
         super.transform(transformInvocation);
+        long startTime = System.currentTimeMillis();
         d("start transform...");
+
+        if (enableParallel) {
+            d("enableParallel Parallelism = " + waitableExecutor.getParallelism());
+        }
 
         mClassPool = new LayoutBindingClassPool(mExtension);
 
@@ -112,14 +123,24 @@ public class LayoutBindingTransform extends Transform {
                             case NOTCHANGED:
                                 break;
                             case REMOVED:
-                                if(destFile.exists()) {
+                                if (destFile.exists()) {
                                     FileUtils.delete(destFile);
                                 }
                                 break;
                             case ADDED:
                             case CHANGED:
                                 // FileUtils.touch(destFile);
-                                transformSingleFile(inputFile, destFile, srcDirPath);
+                                if (enableParallel) {
+                                    runOnExecutor(new Callable() {
+                                        @Override
+                                        public Object call() throws Exception {
+                                            transformSingleFile(inputFile, destFile, srcDirPath);
+                                            return null;
+                                        }
+                                    });
+                                } else {
+                                    transformSingleFile(inputFile, destFile, srcDirPath);
+                                }
                                 break;
                         }
                     }
@@ -128,27 +149,49 @@ public class LayoutBindingTransform extends Transform {
                 }
             }
             for (JarInput jar : input.getJarInputs()) {
-                Status status = jar.getStatus();
-                File outFile = outputProvider.getContentLocation(jar.getName(), jar.getContentTypes(), jar.getScopes(), Format.JAR);
-                // d("transformJar " + jar.getFile().getPath() + ", status=" + status + ", outFile=" + outFile.getPath());
-                if (mIsIncremental) {
-                    switch(status) {
-                        case NOTCHANGED:
-                            continue;
-                        case ADDED:
-                        case CHANGED:
-                            transformJar(jar.getFile(), outFile, status);
-                            break;
-                        case REMOVED:
-                            if (outFile.exists()) {
-                                FileUtils.delete(outFile);
-                            }
-                            break;
-                    }
+                if (enableParallel) {
+                    runOnExecutor(new Callable() {
+                        @Override
+                        public Object call() throws Exception {
+                            transformJar(outputProvider, jar);
+                            return null;
+                        }
+                    });
                 } else {
-                    transformJar(jar.getFile(), outFile, status);
+                    transformJar(outputProvider, jar);
                 }
             }
+        }
+
+        if (enableParallel) {
+            d("waitableExecutor.wait start time=" + System.currentTimeMillis());
+            waitableExecutor.waitForTasksWithQuickFail(true);
+            d("waitableExecutor.wait end time=" + System.currentTimeMillis());
+        }
+
+        d("transform end. cost=" + (System.currentTimeMillis() - startTime));
+    }
+
+    private void transformJar(TransformOutputProvider outputProvider, JarInput jar) throws IOException {
+        Status status = jar.getStatus();
+        File outFile = outputProvider.getContentLocation(jar.getName(), jar.getContentTypes(), jar.getScopes(), Format.JAR);
+        // d("transformJar " + jar.getFile().getPath() + ", status=" + status + ", outFile=" + outFile.getPath());
+        if (mIsIncremental) {
+            switch(status) {
+                case NOTCHANGED:
+                    return;
+                case ADDED:
+                case CHANGED:
+                    transformJar(jar.getFile(), outFile, status);
+                    break;
+                case REMOVED:
+                    if (outFile.exists()) {
+                        FileUtils.delete(outFile);
+                    }
+                    break;
+            }
+        } else {
+            transformJar(jar.getFile(), outFile, status);
         }
     }
 
@@ -159,11 +202,23 @@ public class LayoutBindingTransform extends Transform {
         for (File file : FileUtils.getAllFiles(inputDir)) {
             String destFilePath = file.getAbsolutePath().replace(srcDirPath, destDirPath);
             File destFile = new File(destFilePath);
-            transformSingleFile(file, destFile, srcDirPath);
+            if (enableParallel) {
+                runOnExecutor(new Callable() {
+                    @Override
+                    public Object call() throws Exception {
+                        transformSingleFile(file, destFile, srcDirPath);
+                        return null;
+                    }
+                });
+            } else {
+                transformSingleFile(file, destFile, srcDirPath);
+            }
         }
     }
 
     private void transformSingleFile(File inputFile, File destFile, String srcDirPath) throws IOException {
+        d("transformSingleFile " + inputFile.getName());
+
         destFile.getCanonicalFile().getParentFile().mkdirs();
 
         if (inputFile.getName().endsWith(".class")) {
@@ -179,6 +234,7 @@ public class LayoutBindingTransform extends Transform {
 
 
     private void transformJar(File inputFile, File outFile, Status status) throws IOException {
+        d("transformJar " + inputFile.getName());
         outFile.getCanonicalFile().getParentFile().mkdirs();
         ZipFile zipFile = new ZipFile(inputFile);
         ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(outFile));
@@ -269,6 +325,10 @@ public class LayoutBindingTransform extends Transform {
                 mClassPool.appendClassPath(jarInput.getFile().getAbsolutePath());
             }
         }
+    }
+
+    private void runOnExecutor(Callable callable) {
+        waitableExecutor.execute(callable);
     }
 
     private void d(String msg) {
