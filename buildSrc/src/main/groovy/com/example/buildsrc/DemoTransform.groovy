@@ -18,6 +18,7 @@ class DemoTransform extends Transform {
 
     private WaitableExecutor waitableExecutor = WaitableExecutor.useGlobalSharedThreadPool();
     boolean emptyRun = false;
+    boolean enableParallel = false
 
     @Override
     String getName() {
@@ -132,27 +133,62 @@ class DemoTransform extends Transform {
      * custom transform
      */
     private void transformJar(File jarInput, File dest, Status status) {
-        FileUtils.copyFile(jarInput, dest)
+        if (enableParallel) {
+            runOnExecutor(new Callable() {
+                @Override
+                Object call() throws Exception {
+                    FileUtils.copyFile(jarInput, dest)
+                    return null
+                }
+            })
+        } else {
+            FileUtils.copyFile(jarInput, dest)
+        }
     }
 
     /**
      * custom transform
      */
     private void transformSingleFile(File inputFile, File destFile, String srcDirPath) {
-        FileUtils.copyFile(inputFile, destFile)
+        if (enableParallel) {
+            runOnExecutor(new Callable() {
+                @Override
+                Object call() throws Exception {
+                    FileUtils.copyFile(inputFile, destFile)
+                    return null
+                }
+            })
+        } else {
+            FileUtils.copyFile(inputFile, destFile)
+        }
     }
 
     /**
      * custom transform
      */
     private void transformDir(File inputDir, File destDir) {
-        FileUtils.copyDirectory(inputDir, destDir)
+        if (enableParallel) {
+            runOnExecutor(new Callable() {
+                @Override
+                Object call() throws Exception {
+                    FileUtils.copyDirectory(inputDir, destDir)
+                    return null
+                }
+            })
+        } else {
+            FileUtils.copyDirectory(inputDir, destDir)
+        }
+    }
+
+    private void runOnExecutor(Callable callable) {
+        waitableExecutor.execute(callable)
     }
 
     /**
      * 并发
      */
     private void parallel() {
+        waitableExecutor.parallelism
         //异步并发处理jar/class
         waitableExecutor.execute(new Callable() {
             @Override
