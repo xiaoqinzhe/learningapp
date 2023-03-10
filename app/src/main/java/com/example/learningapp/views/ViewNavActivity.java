@@ -60,4 +60,9 @@ public class ViewNavActivity extends AppCompatActivity {
         Intent intent = new Intent(this, KeyboardActivity.class);
         startActivity(intent);
     }
+
+    public void startTextTestActivity(View view) {
+        Intent intent = new Intent(this, TextTestActivity.class);
+        startActivity(intent);
+    }
 }
