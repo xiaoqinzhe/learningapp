@@ -6,15 +6,15 @@
 #include<string>
 #include<queue>
 #include<dirent.h>
-#include<sys/time.h>
+#include<ctime>
 #include<ftw.h>
 #include<sys/stat.h>
 #include "logutil.h"
 
-long getCurrentTime() {
-    struct timeval tv;
-    gettimeofday(&tv, nullptr);
-    return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+extern int ExecuteCMD(const char *cmd, char *result, int buf_size);
+
+time_t getCurrentTime() {
+    return time(nullptr);
 }
 
 int getDirSizeRec(const std::string& path) {
@@ -107,7 +107,7 @@ int64_t listdir(const char *fileName, int32_t mode, int32_t docType, int64_t tim
 }
 
 int getDirSize(const std::string& path) {
-    long startTime = getCurrentTime();
+    auto startTime = getCurrentTime();
 //    nftwGetDirSize(path);
 //    long count = staticFileCount;
     long count = listdir(path.c_str(),0,0,0,true);
@@ -123,7 +123,7 @@ int getDirSize2(std::string path) {
     struct dirent *iter;
     std::string curPath;
     int fileCount = 0;
-    long startTime = getCurrentTime();
+    auto startTime = getCurrentTime();
     while (!dirPaths.empty()) {
         curPath = dirPaths.front();
         dirPaths.pop();
@@ -147,5 +147,16 @@ int getDirSize2(std::string path) {
     }
     LOGD("getDirSize end. fileCount = %d, duration=%ld", fileCount
          , getCurrentTime() - startTime);
+    return 0;
+}
+
+int getDirSizeByDuCmd(const std::string& path) {
+    LOGD("getDirSize start %s", path.c_str());
+    auto startTime = getCurrentTime();
+    std::string cmd = "nice -n -20 du -d 0 " + path;
+//    std::string cmd = "time ls " + path;
+    char res[1024] = {0};
+    int code = ExecuteCMD(cmd.c_str(), res, 1024);
+    LOGD("getDirSize end. code = %d fileCount = %s, duration=%ld", code, res, getCurrentTime() - startTime);
     return 0;
 }

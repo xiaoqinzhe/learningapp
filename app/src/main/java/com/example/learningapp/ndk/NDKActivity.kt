@@ -2,6 +2,8 @@ package com.example.learningapp.ndk
 
 import android.os.Build
 import android.os.Bundle
+import android.os.Process.THREAD_PRIORITY_URGENT_AUDIO
+import android.os.Process.setThreadPriority
 import android.util.Log
 import android.view.View
 import android.widget.TextView
@@ -35,10 +37,17 @@ class NDKActivity : AppCompatActivity() {
         findViewById<View>(R.id.btn_get_dir_size).setOnClickListener {
             var path = filesDir.parentFile.absolutePath+"/"
             path = "/sdcard/DCIM/"
+            android.os.Process.setThreadPriority(THREAD_PRIORITY_URGENT_AUDIO)
             Thread {
+                android.os.Process.setThreadPriority(THREAD_PRIORITY_URGENT_AUDIO)
+                val st = System.currentTimeMillis()
                 val size = NDKTool.getDirSizeByNative(path)
-                Log.d("NDKActivity", "size = " + size)
-            }.start()
+//                val size = getDirSizeByJava(path)
+                Log.d("native", "fileCount = " + size + ", duration=" + (System.currentTimeMillis() - st))
+            }.apply {
+                priority = Thread.MAX_PRIORITY
+                start()
+            }
 //        Thread {
 //            val st = System.currentTimeMillis()
 //            val size = dirSize(path)

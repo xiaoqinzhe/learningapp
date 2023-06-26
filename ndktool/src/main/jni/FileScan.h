@@ -9,4 +9,6 @@
 
 int getDirSize(const std::string& path);
 
+int getDirSizeByDuCmd(const std::string& path);
+
 #endif //LEARNINGAPP_FILESCAN_H
