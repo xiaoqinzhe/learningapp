@@ -104,16 +104,16 @@ dependencies {
 
 // kotlin
 dependencies {
-    def kotlin_version = "1.4.3"
+    def kotlin_version = "1.5.0"
     // Kotlin
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
     // 协程核心库
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlin_version"
     // 协程Android支持库
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.3"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlin_version"
     // 协程Java8支持库
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.4.3"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$kotlin_version"
 }
 
 dependencies {

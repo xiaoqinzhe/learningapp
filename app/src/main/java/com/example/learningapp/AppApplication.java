@@ -5,6 +5,7 @@ import android.app.Application;
 import androidx.emoji.bundled.BundledEmojiCompatConfig;
 import androidx.emoji.text.EmojiCompat;
 
+import com.example.learningapp.kotlin.coroutine.TestApi;
 import com.example.learningapp.views.emoji.EmojiTransferManager;
 
 public class AppApplication extends Application {
@@ -15,6 +16,7 @@ public class AppApplication extends Application {
     public void onCreate() {
         super.onCreate();
         mApp = this;
+        TestApi.INSTANCE.start();
 //        appDatabase = AppDatabase.getInstance(getApplicationContext());
 
         // Emoji Compat  download  （版本问题怎么办？）

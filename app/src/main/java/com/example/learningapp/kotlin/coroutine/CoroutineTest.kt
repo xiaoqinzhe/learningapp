@@ -1,7 +1,12 @@
 package com.example.learningapp.kotlin.coroutine
 
+import android.util.Log
+import com.example.learningapp.thread.ThreadManager
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
+import kotlin.coroutines.AbstractCoroutineContextElement
+import kotlin.coroutines.CoroutineContext
 import kotlin.system.measureTimeMillis
 
 /**
@@ -17,11 +22,12 @@ import kotlin.system.measureTimeMillis
  * }
  * https://www.bilibili.com/video/BV164411C7FK
  *
- * runBlocking 阻塞协程创建
- * launch 非阻塞协程创建
+ * - runBlocking 阻塞协程创建
+ * Runs a new coroutine and blocks the current thread interruptibly until its completion. This function should not be used from a coroutine. It is designed to bridge regular blocking code to libraries that are written in suspending style, to be used in main functions and in tests.
+ * - launch async 非阻塞协程创建
  *
- * 1. 协程作用域  跟踪所有由其启动的协程，可统一取消
- * GLobalScope，MainScope，viewModelScope
+ * 1. 协程作用域  跟踪所有由其启动的协程，可统一取消  https://juejin.cn/post/6926695962354122765
+ * GlobalScope，MainScope，viewModelScope
  *
  * 2. 调度器  指定运行线程
  * Dispatchers.Main  Default  IO
@@ -29,8 +35,9 @@ import kotlin.system.measureTimeMillis
  * 3. 启动模式
  * CoroutineStart.DEFAULT 立即调度  LAZY 主动start
  *
- * 4. Job  launch async返回的
+ * 4. Job  launch 返回的
  * isActive isCancel   cancel()   withTimeout
+ * async{} 异步返回值 Deferred<T>
  *
  * 5. 上下文 CoroutineContext
  * 由四个元素组成：Job、CoroutineDispatcher、CoroutineName、CoroutineExceptionHandler，各个元素可以用 + 号连接
@@ -39,15 +46,17 @@ import kotlin.system.measureTimeMillis
  */
 object CoroutineTest {
 
+    const val TAG = "CoroutineTest"
+
     // 协程作用域  跟踪所有由其启动的协程，
-    private val scope = MainScope() // ui component
+    private val scope = MainScope() // ui component, need cancel
 
     fun cancel() {
         scope.cancel()  // cancel job and its children!!
     }
 
     fun testScope() {
-        scope.launch(Job() + Dispatchers.Main + CoroutineName("test")
+        scope.launch(User("hhh") + Job() + Dispatchers.Main + CoroutineName("test")
                 + CoroutineExceptionHandler {context, e ->
             println("catch exception $e")
         },
@@ -69,8 +78,8 @@ object CoroutineTest {
             val de2 = scope.async {
                 "result"
             }
-            de.await()
-            de2.await()
+            val res1 = de.await()
+            val res2 = de2.await()
         }
     }
 
@@ -199,6 +208,70 @@ object CoroutineTest {
             Thread.sleep(100) // 假装我们正在计算
             yield(i) // 产生下一个值
         }
+    }
+
+    fun getCallbackFlow(): Flow<String> = callbackFlow {
+//        ThreadManager.postNormal {
+//            Log.d(TAG, "getCallbackFlow start")
+//            Thread.sleep(3000)
+//            Log.d(TAG, "getCallbackFlow trySend")
+//            trySend("done")
+//            Log.d(TAG, "getCallbackFlow trySend end")
+//            if (isActive) {
+//                Log.d(TAG, "getCallbackFlow isActive call close")
+//                close()
+//            }
+//        }
+//        awaitClose { // need call to cancel listener
+//            Log.d(TAG, "getCallbackFlow awaitClose")
+//        }
+
+        val listener: () -> Unit = {
+            Log.d(TAG, "getCallbackFlow listener invoke")
+            trySend("111")
+        }
+        TestApi.listeners.add(listener)
+        awaitClose {
+            Log.d(TAG, "getCallbackFlow awaitClose")
+            TestApi.listeners.remove(listener)
+        }
+
+//        launch {
+//            Log.d(TAG, "getCallbackFlow start")
+//            delay(1000)
+//            Log.d(TAG, "getCallbackFlow send done")
+//            send("done")
+//            Log.d(TAG, "getCallbackFlow send done end")
+//            // can close
+//            if (isActive) {
+//                Log.d(TAG, "getCallbackFlow isActive call close")
+//                close()
+//            }
+//        }
+//        awaitClose { // need call to cancel listener
+//            Log.d(TAG, "getCallbackFlow awaitClose")
+//        }
+    }
+
+    /**
+     * 异步变同步
+     */
+    suspend fun suspendCancellableCoroutineTest(): String = suspendCancellableCoroutine {
+        it.invokeOnCancellation {
+            Log.d(TAG, "suspendCancellableCoroutineTest invokeOnCancellation")
+        }
+        ThreadManager.postNormal {
+            Thread.sleep(2000)
+            if (it.isActive) { // 不能多次调用resume
+                it.resume("done") {
+                    Log.d(TAG, "suspendCancellableCoroutineTest cancel")
+                }
+            }
+        }
+    }
+
+    class User(val name: String) : AbstractCoroutineContextElement(User) {
+        companion object Key : CoroutineContext.Key<User>
     }
 
 }
